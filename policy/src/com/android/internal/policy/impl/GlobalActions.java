@@ -300,8 +300,7 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
         mItems = new ArrayList<Action>();
 
         // first: power off
-        // removed by bonovo zbiao
-        /*mItems.add(
+        mItems.add(
             new SinglePressAction(
                     com.android.internal.R.drawable.ic_lock_power_off,
                     R.string.global_action_power_off) {
@@ -323,7 +322,7 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
                 public boolean showBeforeProvisioning() {
                     return true;
                 }
-            }); */
+            });
 
         // next: airplane mode
         mItems.add(mAirplaneModeOn);
