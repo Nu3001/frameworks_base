@@ -36,6 +36,7 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
+import android.database.ContentObserver;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -51,6 +52,7 @@ import android.os.Parcelable;
 import android.os.RemoteException;
 import android.os.StrictMode;
 import android.os.UserHandle;
+import android.provider.Settings;
 import android.text.Selection;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
@@ -73,6 +75,7 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnCreateContextMenuListener;
+import android.view.View.OnSystemUiVisibilityChangeListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.ViewManager;
@@ -698,6 +701,9 @@ public class Activity extends ContextThemeWrapper
     /*package*/ Configuration mCurrentConfig;
     private SearchManager mSearchManager;
     private MenuInflater mMenuInflater;
+    private SettingsObserver mSettingsObserver;
+    private boolean mHideNavBar;
+    private boolean mHideStatusBar;
 
     static final class NonConfigurationInstances {
         Object activity;
@@ -883,6 +889,8 @@ public class Activity extends ContextThemeWrapper
      * @see #onPostCreate
      */
     protected void onCreate(Bundle savedInstanceState) {
+        mSettingsObserver = new SettingsObserver(mHandler);
+        mSettingsObserver.observe();
         if (DEBUG_LIFECYCLE) Slog.v(TAG, "onCreate " + this + ": " + savedInstanceState);
         if (mLastNonConfigurationInstances != null) {
             mAllLoaderManagers = mLastNonConfigurationInstances.loaders;
@@ -2362,6 +2370,9 @@ public class Activity extends ContextThemeWrapper
      * @see View#onWindowFocusChanged(boolean)
      */
     public void onWindowFocusChanged(boolean hasFocus) {
+        if (hasFocus) {
+           updateImmersiveMode(false);
+        }
     }
     
     /**
@@ -5434,6 +5445,7 @@ public class Activity extends ContextThemeWrapper
      * have completed drawing. This is necessary only after an {@link Activity} has been made
      * opaque using {@link Activity#convertFromTranslucent()} and before it has been drawn
      * translucent again following a call to {@link
+     * translucent again following a call to {@link
      * Activity#convertToTranslucent(TranslucentConversionListener)}.
      *
      * @hide
@@ -5452,4 +5464,75 @@ public class Activity extends ContextThemeWrapper
          */
         public void onTranslucentConversionComplete(boolean drawComplete);
     }
+
+    class SettingsObserver extends ContentObserver {
+        SettingsObserver(Handler handler) {
+            super(handler);
+        }
+
+        void observe() {
+            getContentResolver().registerContentObserver(Settings.System.getUriFor(Settings.System.IMMERSIVE_MODE_NAV), false, this);
+            getContentResolver().registerContentObserver(Settings.System.getUriFor(Settings.System.IMMERSIVE_MODE_SB), false, this);
+        }
+
+        @Override
+        public void onChange(boolean selfChange) {
+            updateImmersiveMode(true);
+        }
+    }
+
+    void updateImmersiveMode(boolean force) {
+        mHideNavBar = Settings.System.getBoolean(getContentResolver(), Settings.System.IMMERSIVE_MODE_NAV, false);
+        mHideStatusBar = Settings.System.getBoolean(getContentResolver(), Settings.System.IMMERSIVE_MODE_SB, false);
+        if (mHideNavBar || mHideStatusBar) {
+                        /*
+             *  SYSTEM_UI_FLAG_IMMERSIVE_STICKY does not allow the action bar to be shown on the swipe
+             *  So use the regular mode and set a postdelayed to re hide it. This will give use access to
+             *  the action bar as well.
+             */
+            mWindow.getDecorView().setOnSystemUiVisibilityChangeListener(new OnSystemUiVisibilityChangeListener() {
+                @Override
+                public void onSystemUiVisibilityChange(int visibility) {
+                    if (visibility == 0 && (mHideNavBar || mHideStatusBar)) {
+                        mHandler.postDelayed(mImmerseModeRunnable, 5000);
+                    }
+                }
+            });
+            mHandler.post(mImmerseModeRunnable);
+        } else {
+            if (force) {
+                mHandler.removeCallbacks(mImmerseModeRunnable);
+                mWindow.getDecorView().setSystemUiVisibility(0);
+            }
+        }
+    }
+
+    Runnable mImmerseModeRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (mHideStatusBar && mHideNavBar) {
+                mWindow.getDecorView().setSystemUiVisibility(
+                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                                | View.SYSTEM_UI_FLAG_FULLSCREEN
+                                | View.SYSTEM_UI_FLAG_IMMERSIVE);
+            }
+            else if (mHideStatusBar) {
+                mWindow.getDecorView().setSystemUiVisibility(
+                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                                | View.SYSTEM_UI_FLAG_FULLSCREEN
+                                | View.SYSTEM_UI_FLAG_IMMERSIVE);
+            }
+            else if (mHideNavBar) {
+                mWindow.getDecorView().setSystemUiVisibility(
+                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                                | View.SYSTEM_UI_FLAG_IMMERSIVE);
+            }
+        }
+    };
 }
