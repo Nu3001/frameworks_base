@@ -4521,4 +4521,10 @@
     <!-- Cling help message when hiding the navigation bar entering immersive mode [CHAR LIMIT=none] -->
     <string name="immersive_mode_confirmation" msgid="8554991488096662508">Swipe down from the top to exit full screen.</string>
 
+    <!-- Immersive Mode -->
+    <string name="immersive_mode_nav">Immersive mode(Navbar)</string>
+    <string name="immersive_mode_on">Immersive mode is ON</string>
+    <string name="immersive_mode_off">Immersive mode is OFF</string>
+    <string name="immersive_mode_sb">Immersive mode(Statusbar)</string>
+
 </resources>
