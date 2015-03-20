@@ -106,6 +106,8 @@ public class Sonata8 {
     }
     
     public static Sonata8 bundle2Radar(Bundle bundle) {
-        return new Sonata8(getInt("volume_front_rear"), getInt("volume_left_right"), getInt("eq_bass"), getInt("eq_mid"), getInt("eq_treble"), getInt("s8_volume"));
+        return new Sonata8(bundle.getInt("volume_front_rear"), bundle.getInt("volume_left_right"),
+                bundle.getInt("eq_bass"), bundle.getInt("eq_mid"), bundle.getInt("eq_treble"),
+                bundle.getInt("s8_volume"));
     }
 }
