@@ -290,7 +290,13 @@ public class NavigationBarView extends LinearLayout {
     }
 	public View getAddButton(){
         return mCurrentView.findViewById(R.id.add);
-    }		
+    }
+    public View getMusicButton() {
+        return mCurrentView.findViewById(R.id.music);
+    }
+    public View getNavigationButton() {
+        return mCurrentView.findViewById(R.id.navigation);
+    }
 
     // for when home is disabled, but search isn't
     public View getSearchLight() {
@@ -391,6 +397,8 @@ public class NavigationBarView extends LinearLayout {
         getBackButton()   .setVisibility(disableBack       ? View.INVISIBLE : View.VISIBLE);
         getHomeButton()   .setVisibility(disableHome       ? View.INVISIBLE : View.VISIBLE);
         getRecentsButton().setVisibility(disableRecent     ? View.INVISIBLE : View.VISIBLE);
+        getMusicButton().setVisibility(disableHome     ? View.INVISIBLE : View.VISIBLE);
+        getNavigationButton().setVisibility(disableHome     ? View.INVISIBLE : View.VISIBLE);
        //  getScreenshotButton().setVisibility(disableHome       ? View.INVISIBLE : View.VISIBLE);
         //***************************************************************
         //* add by bonovo zbiao
