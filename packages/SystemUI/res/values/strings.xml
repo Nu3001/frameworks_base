@@ -507,10 +507,10 @@
          linebreak to position it correctly.  [CHAR LIMIT=45] -->
     <string name="ssl_ca_cert_warning">Network may\nbe monitored</string>
         <!--screen shot-->
-	    <string name="sdcard_unmount">internal storage is unmount</string>
-	    <string name="external_sd_unmount">sd card is unmount</string>
-	    <string name="usb_storage_unmount">usb storage is unmount</string>
-
+	<string name="sdcard_unmount">internal storage is unmount</string>
+	<string name="external_sd_unmount">sd card is unmount</string>
+	<string name="usb_storage_unmount">usb storage is unmount</string>
     <string name="music_chooser_text">Choose music source</string>
     <string name="navigation_chooser_text">Choose navigation source</string>
+
 </resources>
