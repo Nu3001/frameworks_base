@@ -38,17 +38,17 @@ import android.os.Handler;
 import android.os.Message;
 import com.android.systemui.R;
 
-public class MusicButtonView extends KeyButtonView {
+public class AutomotiveButtonView extends KeyButtonView {
     private static final String TAG = "StatusBar.MusicButtonView";
     private static final boolean DEBUG = false;
 
     Context mContext;
 
-    public MusicButtonView(Context context, AttributeSet attrs) {
+    public AutomotiveButtonView(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public MusicButtonView(Context context, AttributeSet attrs, int defStyle) {
+    public AutomotiveButtonView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs);
         mContext = context;
     }
@@ -56,7 +56,7 @@ public class MusicButtonView extends KeyButtonView {
     public boolean performClick() {
         Intent intent = new Intent();
         intent.setAction(Intent.ACTION_MAIN);
-        intent.addCategory(Intent.CATEGORY_APP_MUSIC);
+        intent.addCategory(Intent.CATEGORY_CAR_MODE);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         try {
             mContext.startActivity(intent); }
@@ -67,8 +67,8 @@ public class MusicButtonView extends KeyButtonView {
         setPressed(false);
         Intent intent = new Intent();
         intent.setAction(Intent.ACTION_MAIN);
-        intent.addCategory(Intent.CATEGORY_APP_MUSIC);
-        intent = Intent.createChooser(intent,getResources().getString(R.string.music_chooser_text));
+        intent.addCategory(Intent.CATEGORY_CAR_MODE);
+        intent = Intent.createChooser(intent,getResources().getString(R.string.automotive_chooser_text));
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         mContext.startActivity(intent);
         return true;

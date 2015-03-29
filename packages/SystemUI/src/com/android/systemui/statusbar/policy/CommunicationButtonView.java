@@ -38,37 +38,37 @@ import android.os.Handler;
 import android.os.Message;
 import com.android.systemui.R;
 
-public class MusicButtonView extends KeyButtonView {
+public class CommunicationButtonView extends KeyButtonView {
     private static final String TAG = "StatusBar.MusicButtonView";
     private static final boolean DEBUG = false;
 
     Context mContext;
 
-    public MusicButtonView(Context context, AttributeSet attrs) {
+    public CommunicationButtonView(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public MusicButtonView(Context context, AttributeSet attrs, int defStyle) {
+    public CommunicationButtonView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs);
         mContext = context;
     }
 
     public boolean performClick() {
         Intent intent = new Intent();
-        intent.setAction(Intent.ACTION_MAIN);
-        intent.addCategory(Intent.CATEGORY_APP_MUSIC);
+        intent.setAction(Intent.ACTION_DIAL);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         try {
             mContext.startActivity(intent); }
         catch (ActivityNotFoundException e) {}
         return true;
     }
+
     public boolean performLongClick() {
         setPressed(false);
         Intent intent = new Intent();
-        intent.setAction(Intent.ACTION_MAIN);
-        intent.addCategory(Intent.CATEGORY_APP_MUSIC);
-        intent = Intent.createChooser(intent,getResources().getString(R.string.music_chooser_text));
+        intent.setAction(Intent.ACTION_DIAL);
+        intent.putExtra(Intent.EXTRA_TEXT,mContext.getResources().getString(R.string.communication_chooser_text));
+        intent = Intent.createChooser(intent,getResources().getString(R.string.communication_chooser_text));
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         mContext.startActivity(intent);
         return true;

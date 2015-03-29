@@ -2305,6 +2305,12 @@ public final class Settings {
         public static final String IMMERSIVE_MODE_SB = "immersive_mode_sb";
 
         /**
+         * Navbar Media Mode
+         * @hide
+         */
+        public static final String NAVBAR_MEDIA_MODE = "navbar_media_mode";
+
+        /**
          * Whether the phone vibrates when it is ringing due to an incoming call. This will
          * be used by Phone and Setting apps; it shouldn't affect other apps.
          * The value is boolean (1 or 0).

@@ -25,17 +25,21 @@ import android.app.ActivityManagerNative;
 import android.app.StatusBarManager;
 import android.app.admin.DevicePolicyManager;
 import android.content.BroadcastReceiver;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.content.res.Configuration;
+import android.database.ContentObserver;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
 import android.os.RemoteException;
+import android.provider.Settings;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Display;
@@ -97,6 +101,7 @@ public class NavigationBarView extends LinearLayout {
 
     // performs manual animation in sync with layout transitions
     private final NavTransitionListener mTransitionListener = new NavTransitionListener();
+    private SettingsObserver mSettingsObserver;
 
     private class NavTransitionListener implements TransitionListener {
         private boolean mBackTransitioning;
@@ -215,6 +220,8 @@ public class NavigationBarView extends LinearLayout {
 
         mCameraDisabledByDpm = isCameraDisabledByDpm();
         watchForDevicePolicyChanges();
+        mSettingsObserver = new SettingsObserver(mHandler);
+        mSettingsObserver.observe();
     }
 
     private void watchForDevicePolicyChanges() {
@@ -230,6 +237,36 @@ public class NavigationBarView extends LinearLayout {
                 });
             }
         }, filter);
+    }
+
+    class SettingsObserver extends ContentObserver {
+        SettingsObserver(Handler handler) {
+            super(handler);
+         }
+
+        void observe() {
+            mContext.getContentResolver().registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.NAVBAR_MEDIA_MODE), false, this);
+        }
+
+        @Override
+        public void onChange(boolean selfChange) {
+            onNavBarMediaModeChange();
+        }
+    }
+
+    private void onNavBarMediaModeChange(){
+        View mediabuttons = mCurrentView.findViewById(R.id.mediabuttons);
+        View navbarbuttons = mCurrentView.findViewById(R.id.navbarbuttons);
+        if (Settings.System.getBoolean(mContext.getContentResolver(),Settings.System.NAVBAR_MEDIA_MODE, false)) {
+            Log.e(TAG,"MediaMode!");
+            navbarbuttons.setVisibility(GONE);
+            mediabuttons.setVisibility(VISIBLE);
+        }else {
+            Log.e(TAG,"NavBar Mode!");
+            mediabuttons.setVisibility(GONE);
+            navbarbuttons.setVisibility(VISIBLE);
+        }
     }
 
     public BarTransitions getBarTransitions() {
@@ -297,7 +334,15 @@ public class NavigationBarView extends LinearLayout {
     public View getNavigationButton() {
         return mCurrentView.findViewById(R.id.navigation);
     }
-
+    public View getVolumeButton() {
+        return mCurrentView.findViewById(R.id.volume);
+    }
+    public View getCommunicationButton() {
+        return mCurrentView.findViewById(R.id.communication);
+    }
+    public View getAutomotiveButton() {
+        return mCurrentView.findViewById(R.id.automotive);
+    }
     // for when home is disabled, but search isn't
     public View getSearchLight() {
         return mCurrentView.findViewById(R.id.search_light);
@@ -399,6 +444,10 @@ public class NavigationBarView extends LinearLayout {
         getRecentsButton().setVisibility(disableRecent     ? View.INVISIBLE : View.VISIBLE);
         getMusicButton().setVisibility(disableHome     ? View.INVISIBLE : View.VISIBLE);
         getNavigationButton().setVisibility(disableHome     ? View.INVISIBLE : View.VISIBLE);
+        getAutomotiveButton().setVisibility(disableHome     ? View.INVISIBLE : View.VISIBLE);
+        getCommunicationButton().setVisibility(disableHome     ? View.INVISIBLE : View.VISIBLE);
+        getVolumeButton().setVisibility(disableHome     ? View.INVISIBLE : View.VISIBLE);
+        getCommunicationButton().setVisibility(disableHome     ? View.INVISIBLE : View.VISIBLE);
        //  getScreenshotButton().setVisibility(disableHome       ? View.INVISIBLE : View.VISIBLE);
         //***************************************************************
         //* add by bonovo zbiao

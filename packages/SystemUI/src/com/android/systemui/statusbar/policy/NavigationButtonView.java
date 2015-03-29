@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.policy;
 
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.hardware.input.InputManager;
@@ -42,20 +43,7 @@ public class NavigationButtonView extends KeyButtonView {
     private static final String TAG = "StatusBar.NavigationButtonView";
     private static final boolean DEBUG = false;
 
-    private static final String NAVIGATION_INTENT = Intent.CATEGORY_APP_MAPS;
     Context mContext;
-
-
-    Runnable mCheckLongPress = new Runnable() {
-        public void run() {
-            if (isPressed()) {
-                // Log.d("MusicButtonView", "longpressed: " + this);
-
-                // Just an old-fashioned ImageView
-                performLongClick();
-            }
-        }
-    };
 
     public NavigationButtonView(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
@@ -66,69 +54,19 @@ public class NavigationButtonView extends KeyButtonView {
         mContext = context;
     }
 
-
-    public boolean onTouchEvent(MotionEvent ev) {
-        final int action = ev.getAction();
-        int x, y;
-
-        switch (action) {
-            case MotionEvent.ACTION_DOWN:
-                //Log.d("KeyButtonView", "press");
-                mDownTime = SystemClock.uptimeMillis();
-                setPressed(true);
-                if (mCode != 0) {
-                    sendEvent(KeyEvent.ACTION_DOWN, 0, mDownTime);
-                } else {
-                    // Provide the same haptic feedback that the system offers for virtual keys.
-                    performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
-                }
-                if (mSupportsLongpress) {
-                    removeCallbacks(mCheckLongPress);
-                    postDelayed(mCheckLongPress, ViewConfiguration.getLongPressTimeout());
-                }
-                break;
-            case MotionEvent.ACTION_MOVE:
-                x = (int)ev.getX();
-                y = (int)ev.getY();
-                setPressed(x >= -mTouchSlop
-                        && x < getWidth() + mTouchSlop
-                        && y >= -mTouchSlop
-                        && y < getHeight() + mTouchSlop);
-                break;
-            case MotionEvent.ACTION_CANCEL:
-                setPressed(false);
-                if (mCode != 0) {
-                    sendEvent(KeyEvent.ACTION_UP, KeyEvent.FLAG_CANCELED);
-                }
-                if (mSupportsLongpress) {
-                    removeCallbacks(mCheckLongPress);
-                }
-                break;
-            case MotionEvent.ACTION_UP:
-                final boolean doIt = isPressed();
-                setPressed(false);
-                if (mSupportsLongpress) {
-                    removeCallbacks(mCheckLongPress);
-                }
-                if (doIt) {
-                        performClick();
-                }
-                break;
-        }
-        return true;
-    }
-
     public boolean performClick() {
         Intent intent = new Intent(android.content.Intent.ACTION_VIEW,
                 Uri.parse("geo:"));
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        mContext.startActivity(intent);
+        try {
+            mContext.startActivity(intent); }
+        catch (ActivityNotFoundException e) {}
         return true;
     }
     public boolean performLongClick() {
+        setPressed(false);
         Intent intent = new Intent(android.content.Intent.ACTION_VIEW,
                 Uri.parse("geo:"));
-        intent.putExtra(Intent.EXTRA_TEXT,mContext.getResources().getString(R.string.navigation_chooser_text));
         intent = Intent.createChooser(intent,getResources().getString(R.string.navigation_chooser_text));
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         mContext.startActivity(intent);
