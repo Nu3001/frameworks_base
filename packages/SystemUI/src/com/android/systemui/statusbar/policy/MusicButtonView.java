@@ -16,29 +16,13 @@
 
 package com.android.systemui.statusbar.policy;
 
-import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
-import android.hardware.input.InputManager;
-import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.view.HapticFeedbackConstants;
-import android.view.InputDevice;
-import android.view.KeyCharacterMap;
-import android.view.KeyEvent;
-import android.view.MotionEvent;
-import android.view.SoundEffectConstants;
-import android.view.View;
-import android.view.ViewConfiguration;
-import android.view.ViewDebug;
-import android.view.accessibility.AccessibilityEvent;
-import android.widget.ImageView;
-import android.os.Handler;
-import android.os.Message;
 import com.android.systemui.R;
 
-public class MusicButtonView extends KeyButtonView {
+public class MusicButtonView extends ExtensibleIntentButtonView {
     private static final String TAG = "StatusBar.MusicButtonView";
     private static final boolean DEBUG = false;
 
@@ -50,28 +34,14 @@ public class MusicButtonView extends KeyButtonView {
 
     public MusicButtonView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs);
-        mContext = context;
     }
 
-    public boolean performClick() {
+    public Intent getActionIntent() {
         Intent intent = new Intent();
         intent.setAction(Intent.ACTION_MAIN);
         intent.addCategory(Intent.CATEGORY_APP_MUSIC);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        try {
-            mContext.startActivity(intent); }
-        catch (ActivityNotFoundException e) {}
-        return true;
-    }
-    public boolean performLongClick() {
-        setPressed(false);
-        Intent intent = new Intent();
-        intent.setAction(Intent.ACTION_MAIN);
-        intent.addCategory(Intent.CATEGORY_APP_MUSIC);
-        intent = Intent.createChooser(intent,getResources().getString(R.string.music_chooser_text));
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        mContext.startActivity(intent);
-        return true;
+        return intent;
     }
 }
 

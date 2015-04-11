@@ -62,7 +62,7 @@
     <dimen name="peek_window_y_offset">-12dp</dimen>
 
     <!-- thickness (height) of the navigation bar on phones that require it -->
-    <dimen name="navigation_bar_size">@*android:dimen/navigation_bar_height</dimen>
+    <dimen name="navigation_bar_size">100dp</dimen>
 
     <!-- thickness (height) of the dead zone at the top of the navigation bar,
          reducing false presses on navbar buttons; approx 2mm -->
@@ -129,13 +129,13 @@
     <dimen name="global_screenshot_bg_padding">20dp</dimen>
 
     <!-- The width of the view containing non-menu status bar icons -->
-    <dimen name="navigation_key_width">70dip</dimen>
+    <dimen name="navigation_key_width">100dip</dimen>
 
     <!-- The width of the view containing home/clock icons -->
-    <dimen name="navigation_home_key_width">120dip</dimen>
+    <dimen name="navigation_home_key_width">140dip</dimen>
 
     <!-- The width of the view containing the menu status bar icon -->
-    <dimen name="navigation_menu_key_width">40dip</dimen>
+    <dimen name="navigation_menu_key_width">60dip</dimen>
 
     <!-- Default distance beyond which snaps to the matching target -->
     <dimen name="navbar_search_snap_margin">40dip</dimen>

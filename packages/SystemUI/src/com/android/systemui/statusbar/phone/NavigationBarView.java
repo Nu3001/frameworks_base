@@ -256,16 +256,25 @@ public class NavigationBarView extends LinearLayout {
     }
 
     private void onNavBarMediaModeChange(){
-        View mediabuttons = mCurrentView.findViewById(R.id.mediabuttons);
-        View navbarbuttons = mCurrentView.findViewById(R.id.navbarbuttons);
+        View clock = mCurrentView.findViewById(R.id.digitalclock01);
+        View home = getHomeButton();
+        View back = getBackButton();
+        View play = mCurrentView.findViewById(R.id.media_play);
+        View next = mCurrentView.findViewById(R.id.media_next);
         if (Settings.System.getBoolean(mContext.getContentResolver(),Settings.System.NAVBAR_MEDIA_MODE, false)) {
-            Log.e(TAG,"MediaMode!");
-            navbarbuttons.setVisibility(GONE);
-            mediabuttons.setVisibility(VISIBLE);
+            Log.d(TAG,"MediaMode!");
+            clock.setVisibility(GONE);
+            home.setVisibility(GONE);
+            back.setVisibility(GONE);
+            play.setVisibility(VISIBLE);
+            next.setVisibility(VISIBLE);
         }else {
-            Log.e(TAG,"NavBar Mode!");
-            mediabuttons.setVisibility(GONE);
-            navbarbuttons.setVisibility(VISIBLE);
+            Log.d(TAG,"NavBar Mode!");
+            play.setVisibility(GONE);
+            next.setVisibility(GONE);
+            clock.setVisibility(VISIBLE);
+            home.setVisibility(VISIBLE);
+            back.setVisibility(VISIBLE);
         }
     }
 
@@ -322,12 +331,12 @@ public class NavigationBarView extends LinearLayout {
     public View getScreenshotButton(){
         return mCurrentView.findViewById(R.id.screenshot);
     }
-	public View getSubButton(){
+	/*public View getSubButton(){
         return mCurrentView.findViewById(R.id.sub);
     }
 	public View getAddButton(){
         return mCurrentView.findViewById(R.id.add);
-    }
+    } */
     public View getMusicButton() {
         return mCurrentView.findViewById(R.id.music);
     }
@@ -441,7 +450,8 @@ public class NavigationBarView extends LinearLayout {
 
         getBackButton()   .setVisibility(disableBack       ? View.INVISIBLE : View.VISIBLE);
         getHomeButton()   .setVisibility(disableHome       ? View.INVISIBLE : View.VISIBLE);
-        getRecentsButton().setVisibility(disableRecent     ? View.INVISIBLE : View.VISIBLE);
+        //getRecentsButton().setVisibility(disableRecent     ? View.INVISIBLE : View.VISIBLE);
+        getRecentsButton().setVisibility(GONE);
         getMusicButton().setVisibility(disableHome     ? View.INVISIBLE : View.VISIBLE);
         getNavigationButton().setVisibility(disableHome     ? View.INVISIBLE : View.VISIBLE);
         getAutomotiveButton().setVisibility(disableHome     ? View.INVISIBLE : View.VISIBLE);
@@ -452,7 +462,7 @@ public class NavigationBarView extends LinearLayout {
         //***************************************************************
         //* add by bonovo zbiao
         //***************************************************************
-        if((getSubButton() != null)&&(getAddButton() != null)){
+        /*if((getSubButton() != null)&&(getAddButton() != null)){
         //***************************************************************
         if ("true".equals(isEnableShowVoiceIcon)){
                 getSubButton().setVisibility(disableHome ? View.INVISIBLE : View.VISIBLE);
@@ -499,7 +509,7 @@ public class NavigationBarView extends LinearLayout {
                 return false;
             }
         });
-        }
+        } */
         //***************************************************************
 
         final boolean showSearch = disableHome && !disableSearch;
@@ -576,6 +586,7 @@ public class NavigationBarView extends LinearLayout {
         mCurrentView = mRotatedViews[Surface.ROTATION_0];
 
         watchForAccessibilityChanges();
+        onNavBarMediaModeChange();
     }
 
     private void watchForAccessibilityChanges() {

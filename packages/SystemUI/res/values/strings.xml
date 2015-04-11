@@ -510,9 +510,6 @@
 	<string name="sdcard_unmount">internal storage is unmount</string>
 	<string name="external_sd_unmount">sd card is unmount</string>
 	<string name="usb_storage_unmount">usb storage is unmount</string>
-    <string name="music_chooser_text">Choose music source</string>
-    <string name="communication_chooser_text">Choose communication source</string>
-    <string name="navigation_chooser_text">Choose navigation source</string>
-    <string name="automotive_chooser_text">Choose automotive source</string>
+    <string name="chooser_text">Choose app</string>
 
 </resources>
