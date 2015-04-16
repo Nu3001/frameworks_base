@@ -261,6 +261,7 @@ public class NavigationBarView extends LinearLayout {
         View back = getBackButton();
         View play = mCurrentView.findViewById(R.id.media_play);
         View next = mCurrentView.findViewById(R.id.media_next);
+        View prev = mCurrentView.findViewById(R.id.media_prev);
         if (Settings.System.getBoolean(mContext.getContentResolver(),Settings.System.NAVBAR_MEDIA_MODE, false)) {
             Log.d(TAG,"MediaMode!");
             clock.setVisibility(GONE);
@@ -268,10 +269,12 @@ public class NavigationBarView extends LinearLayout {
             back.setVisibility(GONE);
             play.setVisibility(VISIBLE);
             next.setVisibility(VISIBLE);
+            prev.setVisibility(VISIBLE);
         }else {
             Log.d(TAG,"NavBar Mode!");
             play.setVisibility(GONE);
             next.setVisibility(GONE);
+            prev.setVisibility(GONE);
             clock.setVisibility(VISIBLE);
             home.setVisibility(VISIBLE);
             back.setVisibility(VISIBLE);
@@ -331,12 +334,7 @@ public class NavigationBarView extends LinearLayout {
     public View getScreenshotButton(){
         return mCurrentView.findViewById(R.id.screenshot);
     }
-	/*public View getSubButton(){
-        return mCurrentView.findViewById(R.id.sub);
-    }
-	public View getAddButton(){
-        return mCurrentView.findViewById(R.id.add);
-    } */
+
     public View getMusicButton() {
         return mCurrentView.findViewById(R.id.music);
     }
@@ -459,58 +457,7 @@ public class NavigationBarView extends LinearLayout {
         getVolumeButton().setVisibility(disableHome     ? View.INVISIBLE : View.VISIBLE);
         getCommunicationButton().setVisibility(disableHome     ? View.INVISIBLE : View.VISIBLE);
        //  getScreenshotButton().setVisibility(disableHome       ? View.INVISIBLE : View.VISIBLE);
-        //***************************************************************
-        //* add by bonovo zbiao
-        //***************************************************************
-        /*if((getSubButton() != null)&&(getAddButton() != null)){
-        //***************************************************************
-        if ("true".equals(isEnableShowVoiceIcon)){
-                getSubButton().setVisibility(disableHome ? View.INVISIBLE : View.VISIBLE);
-                getAddButton().setVisibility(disableHome ? View.INVISIBLE : View.VISIBLE);
-				if((mContext.getResources().getConfiguration().orientation == Configuration.        ORIENTATION_PORTRAIT) && ((mContext.getResources().getConfiguration().screenHeightDp < 720) || (mContext.getResources().getConfiguration().screenWidthDp < 720))) {
-					getSubButton().setVisibility(View.GONE);
-					getAddButton().setVisibility(View.GONE);}
-        } else {
-                getSubButton().setVisibility(View.GONE);
-                getAddButton().setVisibility(View.GONE);
-        }
-        //***************************************************************
-        //* add by bonovo zbiao
-        //***************************************************************
-		getSubButton().setOnTouchListener(new View.OnTouchListener() {
-            // additional optimization when we have software system buttons - start loading the recent
-            // tasks on touch down
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                int action = event.getAction() & MotionEvent.ACTION_MASK;
-                if (action == MotionEvent.ACTION_DOWN) {
-                    Intent sub_volume_intent = new Intent("android.intent.action.BONOVO_VOLUMESUB_KEY");
-                    mContext.sendBroadcast(sub_volume_intent);
-                } else if (action == MotionEvent.ACTION_CANCEL) {
-                } else if (action == MotionEvent.ACTION_UP) {
 
-                }
-                return false;
-            }
-        });
-        getAddButton().setOnTouchListener(new View.OnTouchListener() {
-            // additional optimization when we have software system buttons - start loading the recent
-            // tasks on touch down
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                int action = event.getAction() & MotionEvent.ACTION_MASK;
-                if (action == MotionEvent.ACTION_DOWN) {
-                    Intent add_volume_intent = new Intent("android.intent.action.BONOVO_VOLUMEADD_KEY");
-                    mContext.sendBroadcast(add_volume_intent);
-                } else if (action == MotionEvent.ACTION_CANCEL) {
-                } else if (action == MotionEvent.ACTION_UP) {
-
-                }
-                return false;
-            }
-        });
-        } */
-        //***************************************************************
 
         final boolean showSearch = disableHome && !disableSearch;
         final boolean showCamera = showSearch && !mCameraDisabledByDpm;
