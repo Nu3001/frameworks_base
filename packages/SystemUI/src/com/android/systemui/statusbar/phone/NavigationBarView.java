@@ -25,21 +25,17 @@ import android.app.ActivityManagerNative;
 import android.app.StatusBarManager;
 import android.app.admin.DevicePolicyManager;
 import android.content.BroadcastReceiver;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.content.res.Configuration;
-import android.database.ContentObserver;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
 import android.os.RemoteException;
-import android.provider.Settings;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Display;
@@ -101,7 +97,6 @@ public class NavigationBarView extends LinearLayout {
 
     // performs manual animation in sync with layout transitions
     private final NavTransitionListener mTransitionListener = new NavTransitionListener();
-    private SettingsObserver mSettingsObserver;
 
     private class NavTransitionListener implements TransitionListener {
         private boolean mBackTransitioning;
@@ -220,8 +215,6 @@ public class NavigationBarView extends LinearLayout {
 
         mCameraDisabledByDpm = isCameraDisabledByDpm();
         watchForDevicePolicyChanges();
-        mSettingsObserver = new SettingsObserver(mHandler);
-        mSettingsObserver.observe();
     }
 
     private void watchForDevicePolicyChanges() {
@@ -237,48 +230,6 @@ public class NavigationBarView extends LinearLayout {
                 });
             }
         }, filter);
-    }
-
-    class SettingsObserver extends ContentObserver {
-        SettingsObserver(Handler handler) {
-            super(handler);
-         }
-
-        void observe() {
-            mContext.getContentResolver().registerContentObserver(Settings.System.getUriFor(
-                    Settings.System.NAVBAR_MEDIA_MODE), false, this);
-        }
-
-        @Override
-        public void onChange(boolean selfChange) {
-            onNavBarMediaModeChange();
-        }
-    }
-
-    private void onNavBarMediaModeChange(){
-        View clock = mCurrentView.findViewById(R.id.digitalclock01);
-        View home = getHomeButton();
-        View back = getBackButton();
-        View play = mCurrentView.findViewById(R.id.media_play);
-        View next = mCurrentView.findViewById(R.id.media_next);
-        View prev = mCurrentView.findViewById(R.id.media_prev);
-        if (Settings.System.getBoolean(mContext.getContentResolver(),Settings.System.NAVBAR_MEDIA_MODE, false)) {
-            Log.d(TAG,"MediaMode!");
-            clock.setVisibility(GONE);
-            home.setVisibility(GONE);
-            back.setVisibility(GONE);
-            play.setVisibility(VISIBLE);
-            next.setVisibility(VISIBLE);
-            prev.setVisibility(VISIBLE);
-        }else {
-            Log.d(TAG,"NavBar Mode!");
-            play.setVisibility(GONE);
-            next.setVisibility(GONE);
-            prev.setVisibility(GONE);
-            clock.setVisibility(VISIBLE);
-            home.setVisibility(VISIBLE);
-            back.setVisibility(VISIBLE);
-        }
     }
 
     public BarTransitions getBarTransitions() {
@@ -334,22 +285,13 @@ public class NavigationBarView extends LinearLayout {
     public View getScreenshotButton(){
         return mCurrentView.findViewById(R.id.screenshot);
     }
+	public View getSubButton(){
+        return mCurrentView.findViewById(R.id.sub);
+    }
+	public View getAddButton(){
+        return mCurrentView.findViewById(R.id.add);
+    }		
 
-    public View getMusicButton() {
-        return mCurrentView.findViewById(R.id.music);
-    }
-    public View getNavigationButton() {
-        return mCurrentView.findViewById(R.id.navigation);
-    }
-    public View getVolumeButton() {
-        return mCurrentView.findViewById(R.id.volume);
-    }
-    public View getCommunicationButton() {
-        return mCurrentView.findViewById(R.id.communication);
-    }
-    public View getAutomotiveButton() {
-        return mCurrentView.findViewById(R.id.automotive);
-    }
     // for when home is disabled, but search isn't
     public View getSearchLight() {
         return mCurrentView.findViewById(R.id.search_light);
@@ -448,16 +390,60 @@ public class NavigationBarView extends LinearLayout {
 
         getBackButton()   .setVisibility(disableBack       ? View.INVISIBLE : View.VISIBLE);
         getHomeButton()   .setVisibility(disableHome       ? View.INVISIBLE : View.VISIBLE);
-        //getRecentsButton().setVisibility(disableRecent     ? View.INVISIBLE : View.VISIBLE);
-        getRecentsButton().setVisibility(GONE);
-        getMusicButton().setVisibility(disableHome     ? View.INVISIBLE : View.VISIBLE);
-        getNavigationButton().setVisibility(disableHome     ? View.INVISIBLE : View.VISIBLE);
-        getAutomotiveButton().setVisibility(disableHome     ? View.INVISIBLE : View.VISIBLE);
-        getCommunicationButton().setVisibility(disableHome     ? View.INVISIBLE : View.VISIBLE);
-        getVolumeButton().setVisibility(disableHome     ? View.INVISIBLE : View.VISIBLE);
-        getCommunicationButton().setVisibility(disableHome     ? View.INVISIBLE : View.VISIBLE);
+        getRecentsButton().setVisibility(disableRecent     ? View.INVISIBLE : View.VISIBLE);
        //  getScreenshotButton().setVisibility(disableHome       ? View.INVISIBLE : View.VISIBLE);
+        //***************************************************************
+        //* add by bonovo zbiao
+        //***************************************************************
+        if((getSubButton() != null)&&(getAddButton() != null)){
+        //***************************************************************
+        if ("true".equals(isEnableShowVoiceIcon)){
+                getSubButton().setVisibility(disableHome ? View.INVISIBLE : View.VISIBLE);
+                getAddButton().setVisibility(disableHome ? View.INVISIBLE : View.VISIBLE);
+				if((mContext.getResources().getConfiguration().orientation == Configuration.        ORIENTATION_PORTRAIT) && ((mContext.getResources().getConfiguration().screenHeightDp < 720) || (mContext.getResources().getConfiguration().screenWidthDp < 720))) {
+					getSubButton().setVisibility(View.GONE);
+					getAddButton().setVisibility(View.GONE);}
+        } else {
+                getSubButton().setVisibility(View.GONE);
+                getAddButton().setVisibility(View.GONE);
+        }
+        //***************************************************************
+        //* add by bonovo zbiao
+        //***************************************************************
+		getSubButton().setOnTouchListener(new View.OnTouchListener() {
+            // additional optimization when we have software system buttons - start loading the recent
+            // tasks on touch down
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                int action = event.getAction() & MotionEvent.ACTION_MASK;
+                if (action == MotionEvent.ACTION_DOWN) {
+                    Intent sub_volume_intent = new Intent("android.intent.action.BONOVO_VOLUMESUB_KEY");
+                    mContext.sendBroadcast(sub_volume_intent);
+                } else if (action == MotionEvent.ACTION_CANCEL) {
+                } else if (action == MotionEvent.ACTION_UP) {
 
+                }
+                return false;
+            }
+        });
+        getAddButton().setOnTouchListener(new View.OnTouchListener() {
+            // additional optimization when we have software system buttons - start loading the recent
+            // tasks on touch down
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                int action = event.getAction() & MotionEvent.ACTION_MASK;
+                if (action == MotionEvent.ACTION_DOWN) {
+                    Intent add_volume_intent = new Intent("android.intent.action.BONOVO_VOLUMEADD_KEY");
+                    mContext.sendBroadcast(add_volume_intent);
+                } else if (action == MotionEvent.ACTION_CANCEL) {
+                } else if (action == MotionEvent.ACTION_UP) {
+
+                }
+                return false;
+            }
+        });
+        }
+        //***************************************************************
 
         final boolean showSearch = disableHome && !disableSearch;
         final boolean showCamera = showSearch && !mCameraDisabledByDpm;
@@ -533,7 +519,6 @@ public class NavigationBarView extends LinearLayout {
         mCurrentView = mRotatedViews[Surface.ROTATION_0];
 
         watchForAccessibilityChanges();
-        onNavBarMediaModeChange();
     }
 
     private void watchForAccessibilityChanges() {

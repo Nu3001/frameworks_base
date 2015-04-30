@@ -2161,11 +2161,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 }
             }
             return 0;
-        } else if (keyCode == KeyEvent.KEYCODE_NOTIFICATION) {
-            if (down && repeatCount == 0) {
-                return -1;
-            }
-            return -1;
         } else if (keyCode == KeyEvent.KEYCODE_APP_SWITCH) {
             if (!keyguardOn) {
                 if (down && repeatCount == 0) {
