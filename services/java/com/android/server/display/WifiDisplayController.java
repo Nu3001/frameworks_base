@@ -414,6 +414,7 @@ final class WifiDisplayController implements DumpUtils.Dump {
     }
 
     private void tryDiscoverPeers() {
+		if(!mWifiWFDServicerOn){
         mWifiP2pManager.discoverPeers(mWifiP2pChannel, new ActionListener() {
             @Override
             public void onSuccess() {
@@ -440,6 +441,7 @@ final class WifiDisplayController implements DumpUtils.Dump {
         // Retry discover peers periodically until stopped.
         mHandler.postDelayed(mDiscoverPeers, DISCOVER_PEERS_INTERVAL_MILLIS);
     }
+	}
 
     private void stopPeerDiscovery() {
         mWifiP2pManager.stopPeerDiscovery(mWifiP2pChannel, new ActionListener() {
@@ -925,6 +927,7 @@ final class WifiDisplayController implements DumpUtils.Dump {
 
 							SystemProperties.set("ctl.start",command);
 							mWifiWFDServicerOn =true;
+							stopPeerDiscovery();
 						}
 					});				
 				}
@@ -945,6 +948,7 @@ final class WifiDisplayController implements DumpUtils.Dump {
 			            	Slog.d(TAG,"######mWifiWFDServicerOn restart####");
 							updateSettings();
 			            }},2000);	
+					tryDiscoverPeers();
 				}
 				
         }

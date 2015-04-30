@@ -19,6 +19,9 @@ LOCAL_SRC_FILES:= \
     com_android_server_location_FlpHardwareProvider.cpp \
     com_android_server_connectivity_Vpn.cpp \
     com_android_server_Canbus.cpp \
+    canbus_data_parse/Hechi_hyundai.cpp \
+    canbus_data_parse/bonovo_volkaswagen.cpp \
+    canbus_data_parse/xinpu_hyundai_kia.cpp \
    onload.cpp
 
 LOCAL_C_INCLUDES += \

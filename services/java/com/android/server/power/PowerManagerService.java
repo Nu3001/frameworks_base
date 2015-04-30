@@ -775,8 +775,9 @@ public final class PowerManagerService extends IPowerManager.Stub
         for (int i = 0; i < numWakeLocks; i++) {
             WakeLock wakeLock = mWakeLocks.get(i);
             //Log.d(TAG, "====== 00 - 0 mWakeLocks[" + i + "]:" + wakeLock.mPackageName);
-            if("android".equals(wakeLock.mPackageName) || "media".equals(wakeLock.mPackageName)){
-                continue;
+            //if("android".equals(wakeLock.mPackageName) || "media".equals(wakeLock.mPackageName)){
+			if("android".equals(wakeLock.mPackageName)){
+				continue;
             }
             mWakeLocksBackup.add(wakeLock);
         }

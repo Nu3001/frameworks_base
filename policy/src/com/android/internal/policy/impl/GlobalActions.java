@@ -237,7 +237,8 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
 
         // first: power off
         // removed by bonovo zbiao
-        /*mItems.add(
+        //modify by myu 2015-1-28
+        mItems.add(
             new SinglePressAction(
                     com.android.internal.R.drawable.ic_lock_power_off,
                     R.string.global_action_power_off) {
@@ -259,7 +260,7 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
                 public boolean showBeforeProvisioning() {
                     return true;
                 }
-            }); */
+            }); 
 
         // next: airplane mode
         mItems.add(mAirplaneModeOn);

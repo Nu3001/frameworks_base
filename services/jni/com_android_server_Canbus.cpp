@@ -28,6 +28,7 @@
 #include <errno.h>
 #include <string.h>
 #include <unistd.h>
+#include "com_android_server_Canbus.h"
 
 //#define DEBUG
 #ifdef DEBUG
@@ -37,112 +38,35 @@
 #define LOGE(fmt, args...) ALOGE(fmt, ##args)
 #define LOGW(fmt, args...) ALOGW(fmt, ##args)
 #else
-#define LOGV(fmt, args...)
-#define LOGD(fmt, args...)
-#define LOGI(fmt, args...)
-#define LOGE(fmt, args...)
-#define LOGW(fmt, args...)
+#define LOGV(fmt, args...) 
+#define LOGD(fmt, args...) 
+#define LOGI(fmt, args...) 
+#define LOGE(fmt, args...) 
+#define LOGW(fmt, args...) 
 #endif
 
 namespace android {
 
-#define CANBUS_DEV     			"/dev/bonovo_canbus"    
-#define CANBUS_BUF_SIZE 		4096
-#define CANBUS_FRAME_SIZE			64
-int canbus_fd = -1;
+
+extern int process_canbus_command_volkaswagen(unsigned char *buf, int frame_len);
+extern int process_canbus_command_sonata8(unsigned char *buf, int frame_len);
+extern tSonataCarInfo sonata_car_info;
+
+
 JavaVM *gJavaVM;
-
-#define TYPE_RESPONE_HOST_REQUEST   0x10
-#define TYPE_RESPONE_BACKLIGHT      0x14
-#define TYPE_RESPONE_CARSPEED       0x16
-#define TYPE_RESPONE_AIRCONDITION   0x21
-#define TYPE_RESPONE_RADAR          0x22
-#define TYPE_RESPONE_WHEELKEYCODE   0x23
-#define TYPE_RESPONE_WHEELANGLE     0x24
-#define TYPE_RESPONE_ADVANCEINFO    0x25
-#define TYPE_RESPONE_CARDOORINFO    0x26
-#define TYPE_RESPONE_SOFTVERSION    0x71
-
-#define DEV_MAJOR			        236
-#define CANBUS_IOCTL_KEY_INFO		_IO(DEV_MAJOR, 0)
-
-
-struct canbus_buf_t
-{
-	unsigned char buf[CANBUS_BUF_SIZE];
-	int w_idx;			// indicate the buffer that is written now
-	int r_idx;			// indicate the buffer that is read now
-	int valid_data_num;	// indicate how many valid data in the buffer
-};
-
-// 送风模式
-typedef enum _CAN_FAN_MODE
-{
-	CAN_FAN_MODE_NONE = 0,				// 无风
-	CAN_FAN_MODE_HORI,					// 平行送风
-	CAN_FAN_MODE_UP,					// 向上送风(风挡送风)
-	CAN_FAN_MODE_DOWN,					// 向下送风(腿部送风)
-	CAN_FAN_MODE_HORI_DOWN,				// 平行与向下送风
-	CAN_FAN_MODE_UP_DOWN,				// 向上与向下送风
-	CAN_FAN_MODE_HORI_UP,				// 平行与向上送风
-	CAN_FAN_MODE_HORI_UP_DOWN,			// 平行、向上与向下送风
-	CAN_FAN_MODE_AUTO = 100				// 自动送风模式
-}CAN_FAN_MODE;
-
-// 风速
-typedef struct _CAN_FAN_SPEED_LEVEL
-{
-	int iCurSpeed;      // 当前速度，0xffff 自动风量
-	int iMaxSpeed;      // 最大速度
-}CAN_FAN_SPEEDLEVEL,*PCAN_FAN_SPEEDLEVEL;
-
-
-// 空调信息
-typedef struct _CAN_AC_INFO
-{
-    int bShowAcInfo;         // true 显示空调信息，false 不显示空调信息
-	int bPowerOn;            // true 空调开，false 空调关
-	int bAcOn;               // A/C指示(空调压缩机开关指示)
-	int bAuto;               // AUTO指示(Auto大小风有一个开该指示均置位)
-	int bDeicerOn;           // 除冰灯指示
-	int bDualOn;             // DUAL指示
-	int bSwingOn;            // SWING指示(皇冠专用)
-	int bKafunOn;            // KAFUN指示(皇冠专用)
-	int bFrontOn;            // FRONT指示
-	int bRearOn;             // REAR指示
-	int bIonOn;              // ION指示(离子)
-	int bLoopMode;			 // 1:内循环,0:外循环指示
-	int bAQS;                // AQS内循环指示
-	int bRearLock;           // 后座空调锁定
-	int bAcMax;              // ACMAX指示，空调所有值都为最大
-	CAN_FAN_MODE fanMode;         // 送风模式
-	CAN_FAN_SPEEDLEVEL fanSpeed;  // 风速
-	int bShowLeftTemp;       // 是否显示左温度
-	unsigned int     tempLeft;            // 左温度,0X0000 LO,0XFFFF HI
-	int bShowRightTemp;      // 是否显示右温度
-	unsigned int     tempRight;           // 右温度,0X0000 LO,OXFFFF HI
-	int bShowOutdoorTemp;    // 是否显示室外温度
-	int tempOutDoor;         // 室外温度(CAN_INVALID_VALUE 表示无效数据或不支持)
-	int bShowLeftSeatHeated; // 是否显示左桌椅加热
-	unsigned int     nLeftSeatHeated;     // 左桌椅加热温度等级，1-3级
-	int bShowRightSeatHeated;// 是否显示右桌椅加热
-	unsigned int     nRightSeatHeated;    // 右桌椅加热温度等级，1-3级
-	//int bEcoOn;              // ECO指示(不知道是哪个车型使用的)
-	//int bZoneOn;             // ZONE指示(不知道是哪个车型使用的)
-	//int bAutoFanSpeed;       // 自动风量指示(不知道是哪个车型使用的)
-}CAN_AC_INFO,*PCAN_AC_INFO;
-
-
+int canbus_fd = -1;
 unsigned char canbus_frame_buf[CANBUS_FRAME_SIZE];
-unsigned char ac_cache[6];
-unsigned char radar_cache[9];
-unsigned int key_cache[3];
-unsigned char car_door_cache[2];
-CAN_AC_INFO canbus_ac_info;
+CAN_AC_INFO ac_info;
 static void nativeReportAirCondition();
-int updateAndReportRadar(unsigned char *buf, int len);
-int updateAndReportAirConditon(unsigned char * buf, int len);
-int updateAndReportCarDoor(unsigned char * buf, int len);
+int updateAndReportRadar(void);
+int updateAndReportAirConditon(void);
+//int updateAndReportCarDoor(unsigned char * buf, int len);
+int updateAndReportSonata8(tSonataCarInfo * sonata8Info, int len);
+
+tCarType car_type;
+tCanBoxVendor canbox_vendor = eCanBoxVendorBonovo;
+tCarDoorInfo door_info;
+tCarRadarInfo radar_info;
 
 int calculate_frame_checksum(unsigned char *buf, int frame_len, unsigned char *checksum)
 {
@@ -165,162 +89,26 @@ int calculate_frame_checksum(unsigned char *buf, int frame_len, unsigned char *c
 }
 
 
-int parse_canbus_ac_info(unsigned char *ac_data_buf, int buf_len)
-{
-    //ALOGE("==== ac_data_buf [0]:0x%02X  [1]:0x%02X  [2]:0x%02X  [3]:0x%02X  [4]:0x%02X\n",
-    //    ac_data_buf[0], ac_data_buf[1], ac_data_buf[2], ac_data_buf[3], ac_data_buf[4]);
-	// parse 1st byte
-	canbus_ac_info.bPowerOn = (ac_data_buf[0]&0x80)>>7;
-	canbus_ac_info.bAcOn = (ac_data_buf[0]&0x40)>>6;
-	canbus_ac_info.bLoopMode = (ac_data_buf[0]&0x20)>>5;
-	canbus_ac_info.bAuto = !!((ac_data_buf[0]&0x1F)>>3);
-	canbus_ac_info.bDualOn = (ac_data_buf[0]&0x04)>>2;
-	canbus_ac_info.bFrontOn = (ac_data_buf[0]&0x02)>>1;
-	canbus_ac_info.bRearOn = ac_data_buf[0]&0x01;
-
-	// parse 2nd byte
-	switch ((ac_data_buf[1]&0xE0)>>5)
-	{
-		case 0:
-			canbus_ac_info.fanMode = CAN_FAN_MODE_NONE;
-			break;
-		case 1:
-			canbus_ac_info.fanMode = CAN_FAN_MODE_DOWN;
-			break;
-		case 2:
-			canbus_ac_info.fanMode = CAN_FAN_MODE_HORI;
-			break;
-		case 3:
-			canbus_ac_info.fanMode = CAN_FAN_MODE_HORI_DOWN;
-			break;
-		case 4:
-			canbus_ac_info.fanMode = CAN_FAN_MODE_UP;
-			break;
-		case 5:
-			canbus_ac_info.fanMode = CAN_FAN_MODE_UP_DOWN;
-			break;
-		case 6:
-			canbus_ac_info.fanMode = CAN_FAN_MODE_HORI_UP;
-			break;
-		case 7:
-			canbus_ac_info.fanMode = CAN_FAN_MODE_HORI_UP_DOWN;
-			break;
-		default:
-			break;
-	}
-    canbus_ac_info.bShowAcInfo = (ac_data_buf[1]&0x10) >> 4;
-	canbus_ac_info.fanSpeed.iCurSpeed = ac_data_buf[1]&0x07;
-
-	// parse 3rd byte, left temperature
-	if (ac_data_buf[2] == 0)
-	{
-		canbus_ac_info.tempLeft = 0;
-	}
-	else if (ac_data_buf[2] < 0x11)
-	{
-		canbus_ac_info.tempLeft = 180+(ac_data_buf[2]-1)*5;
-	}
-	else if (ac_data_buf[2] == 0x1F)
-	{
-		canbus_ac_info.tempLeft = 0xFFFF;
-	}
-
-	// parse 4th byte, right temperature
-	if (ac_data_buf[3] == 0)
-	{
-		canbus_ac_info.tempRight = 0;
-	}
-	else if (ac_data_buf[3] < 0x11)
-	{
-		canbus_ac_info.tempRight = 180+(ac_data_buf[3]-1)*5;
-	}
-	else if (ac_data_buf[3] == 0x1F)
-	{
-		canbus_ac_info.tempRight = 0xFFFF;
-	}
-
-	// parse 5th byte,
-	canbus_ac_info.bAQS = (ac_data_buf[4]&0x80)>>7;
-	canbus_ac_info.nLeftSeatHeated = (ac_data_buf[4]&0x70)>>4;
-	canbus_ac_info.bShowLeftSeatHeated = !!canbus_ac_info.nLeftSeatHeated;
-	canbus_ac_info.bRearLock = (ac_data_buf[4]&0x08)>>3;
-	canbus_ac_info.bAcMax = (ac_data_buf[4]&0x04)>>2;
-    canbus_ac_info.nRightSeatHeated = ac_data_buf[4] & 0x03;
-    canbus_ac_info.bShowRightSeatHeated = !!canbus_ac_info.nRightSeatHeated;
-
-	return 0;
-}
-
 int process_canbus_command(unsigned char *buf, int frame_len)
 {
-	switch(buf[1])
+	int ret_val = 0;
+	switch (car_type)
 	{
-		case TYPE_RESPONE_AIRCONDITION:
-			if (!ac_cache[0])			// ac_cache has no data in it
-			{
-				memcpy(&ac_cache[1], &buf[3], 5);
-				ac_cache[0] = 2;
-			}
-			else if (memcmp(&ac_cache[1], &buf[3], 5))
-			{
-				memcpy(&ac_cache[1], &buf[3], 5);
-				ac_cache[0] = 2;		// ac_cache has data in it, and need parse the data
-			}
-			else 
-			{
-				ac_cache[0] = 1;		// ac_cache has data in it, and do not need parse data
-			}
-			
-			if (ac_cache[0] == 2)
-			{
-				parse_canbus_ac_info(&ac_cache[1], 5);
-				//nativeReportAirCondition();
-                updateAndReportAirConditon(&ac_cache[1], 5);
-			}
+		case eCarTypeVolkaswagen:
+			ret_val = process_canbus_command_volkaswagen(buf, frame_len);
 			break;
-        case TYPE_RESPONE_RADAR:
-            if(!radar_cache[0])
-            {
-                memcpy(&radar_cache[1], &buf[3], 8);
-                radar_cache[0] = 2;
-            }else if (memcmp(&radar_cache[1], &buf[3], 8)){
-                memcpy(&radar_cache[1], &buf[3], 8);
-                radar_cache[0] = 2;
-            }else{
-                radar_cache[0] = 1;
-            }
-            if(radar_cache[0] == 2){
-                updateAndReportRadar(&radar_cache[1], 8);
-            }
-            break;
-        case TYPE_RESPONE_WHEELKEYCODE:
-            memset(key_cache, 0x00, sizeof(key_cache));
-            key_cache[0] = 2; // make the key valid.
-            key_cache[1] = (buf[3] & 0xFF)<<8; // make the min difference of two key is 256
-            key_cache[2] = buf[4]; // the key's status(down or up);
-            ioctl(canbus_fd, CANBUS_IOCTL_KEY_INFO, &key_cache[0]);
-            break;
-        case TYPE_RESPONE_CARDOORINFO:
-            if(!car_door_cache[0])
-            {
-                memcpy(&car_door_cache[1], &buf[3], 1);
-                car_door_cache[0] = 2;
-            }else if (memcmp(&car_door_cache[1], &buf[3], 1)){
-                memcpy(&car_door_cache[1], &buf[3], 1);
-                car_door_cache[0] = 2;
-            }else{
-            	car_door_cache[0] = 1;
-            }
-            if(car_door_cache[0] == 2){
-                updateAndReportCarDoor(&car_door_cache[1], 1);
-            }
-            break;
+		case eCarTypeSonata8:
+			LOGD("myu eCarTypeSonata8!!!");
+			ret_val = process_canbus_command_sonata8(buf, frame_len);
+			break;
 		default:
 			break;
 	}
-	return 0;
+	return ret_val;
 }
 
+
+// parse the frame data coming from canbus
 int parse_canbus_frame(unsigned char *buf, int frame_len)
 {
 	unsigned char checksum_calculated;
@@ -341,8 +129,19 @@ int parse_canbus_frame(unsigned char *buf, int frame_len)
 	return 0;
 }
 
+
+//===================================================================
+// void *canbus_thread_func(void *argv) 
+//-------------------------------------------------------------------
+// the main thread. 
+// 1. send start command(some vehicle need to send start command before reading)
+// 2. read data from canbus device
+// 3. Judge if have receive one whole frame.
+// 4. send Ack to canbox
+//===================================================================
 void *canbus_thread_func(void *argv) 
 {
+	//LOGD("myu canbus_thread_funcd !!!!");
 	struct canbus_buf_t raw_buf;
 	int count;
 	int flag = 0;
@@ -356,23 +155,32 @@ void *canbus_thread_func(void *argv)
 	};
 	unsigned char canbus_ack = 0xFF;
 
-	memset(&raw_buf, 0x00, sizeof(struct canbus_buf_t));
-	memset(ac_cache, 0x00, 6);
-    memset(radar_cache, 0x00, 9);
-
-	calculate_frame_checksum(start_cmd_frame, 5, &start_cmd_frame[4]);
-	count = write(canbus_fd, start_cmd_frame, 5);
-	if (count < 5)
-	{
-        ALOGE("Can't start. Write %s failed, errno:%d(%s)", CANBUS_DEV, errno, strerror(errno));
-	}
-	frame_head = 0x2E;
-	
 	if (canbus_fd == -1)
 	{
         ALOGE("could not open %s, errno:%d(%s)", CANBUS_DEV, errno, strerror(errno));
 		return NULL;
 	}
+	
+	memset(&raw_buf, 0x00, sizeof(struct canbus_buf_t));
+
+	//===============================================================
+	// 八代索纳塔第一个字节为0x0B表示开机
+	// 只有发送了开机命令后,才能收到CAN 总线上的数据
+	if (car_type == eCarTypeSonata8)
+	{
+		//LOGD("myu canbus_thread_func-->car_type = S8 ");
+		start_cmd_frame[1] = 0x0B;
+	}
+	calculate_frame_checksum(start_cmd_frame, 5, &start_cmd_frame[4]);
+	count = write(canbus_fd, start_cmd_frame, 5);
+	//LOGD("myu canbus_thread_func-->write count = %d ",count);
+	if (count < 5)
+	{
+        ALOGE("Can't start. Write %s failed, errno:%d(%s)", CANBUS_DEV, errno, strerror(errno));
+	}
+	//===============================================================
+	frame_head = 0x2E;
+	
 	
 	while (1)
 	{
@@ -393,7 +201,8 @@ void *canbus_thread_func(void *argv)
 			raw_buf.r_idx++;
 			
 			if (flag == 0)
-			{
+			{ 
+				LOGD(" while(1)--->flag == 0");
 				// now we have found the frame head
 				if (tmp_ch == frame_head)
 				{
@@ -416,6 +225,7 @@ void *canbus_thread_func(void *argv)
 			}
 			else if (flag == 1)
 			{
+				LOGD(" while(1)--->flag == 1");
 				canbus_frame_buf[frame_byte_idx] = tmp_ch;
 				frame_byte_idx++;
 
@@ -441,6 +251,7 @@ void *canbus_thread_func(void *argv)
 			}
 			else if (flag == 2)
 			{
+				LOGD(" while(1)--->flag == 2");
 				canbus_frame_buf[frame_byte_idx] = tmp_ch;
 				frame_byte_idx++;
 
@@ -460,12 +271,361 @@ void *canbus_thread_func(void *argv)
                         ALOGE("parse_canbus_frame error. error:%d", ret);
                     }
 				}
-				
 			}
 		}
 	}
 }
 
+// sonata8 set UART--->38400
+// myu, 2014-11-14
+static jint android_server_CanBusService_setSercial_UART38400(
+	JNIEnv* env, jobject obj,jint baud)
+{
+	int ret_val = 1;
+	ret_val = ioctl(canbus_fd, CANBUS_IOCTL_MCU_UART_38400, baud);
+	LOGD("myu setSercial_UART38400!!!-->%d",baud);
+	return ret_val;
+}
+
+static jint android_server_CanBusService_native_setMcuUartFunc(
+	JNIEnv* env, jobject obj, jint mcu_uart_func_type)
+{
+	int ret = -1;
+	int func_type;
+
+	func_type = mcu_uart_func_type;
+	LOGD("myu native_setMcuUartFunc --->func_type = %d ",func_type);
+    ret = ioctl(canbus_fd, CANBUS_IOCTL_MCU_UART_DEV, &func_type);
+	
+	return ret;
+}
+
+static jint android_server_CanBusService_native_setCarType(
+	JNIEnv* env, jobject obj, jint type)
+{
+	  LOGD("myu setCarType type :%d ", type);
+	if ((unsigned long)type >= eCarTypeNum)
+	{
+		car_type = eCarTypeVolkaswagen;
+	}
+	else
+	{
+		car_type = (tCarType)type;
+		LOGD("myu setCarType :car_type= %d ",car_type);
+	}
+	
+	return 0;
+}
+
+// sonata8 front and rear balance
+// dzwei, 2014-11-7
+static jint android_server_CanBusService_native_setFadVal(
+	JNIEnv* env, jobject obj, jbyte fad_val)
+{
+	int count;			// the byte number that have been written 
+	int ret_val = 1;
+	unsigned char frame_buf[5]=
+	{
+		0x2E, 0x03, 0x01, 0x01, 0x00
+	};
+	
+	sonata_car_info.fad_val = fad_val;
+	frame_buf[3] = fad_val;
+	calculate_frame_checksum(frame_buf, 5, &frame_buf[4]);
+	for(int i=0;i<5;i++){
+		LOGD("myu native_setFadVal= 0X%x ",frame_buf[i]);
+	}
+	count = write(canbus_fd, frame_buf, 5);
+	if (count == 5)
+	{
+		ret_val = 0;
+	}
+
+	return ret_val;
+}
+
+// sonata8 left and right balance
+// dzwei, 2014-11-7
+static jint android_server_CanBusService_native_setBalVal(
+	JNIEnv* env, jobject obj, jbyte bal_val)
+{
+	int count;			// the byte number that have been written 
+	int ret_val = 1;
+	unsigned char frame_buf[5]=
+	{
+		0x2E, 0x04, 0x01, 0x01, 0x00
+	};
+	
+	sonata_car_info.bal_val = bal_val;
+	frame_buf[3] = bal_val;
+	calculate_frame_checksum(frame_buf, 5, &frame_buf[4]);
+	for(int i=0;i<5;i++){
+		LOGD("myu native_setBalVal= 0X%x ",frame_buf[i]);
+	}
+	count = write(canbus_fd, frame_buf, 5);
+	if (count == 5)
+	{
+		ret_val = 0;
+	}
+
+	return ret_val;
+}
+
+// sonata8 volume setting
+// dzwei, 2014-11-7
+static jint android_server_CanBusService_native_setVol(
+	JNIEnv* env, jobject obj, jbyte volume)
+{
+	int count;			// the byte number that have been written 
+	int ret_val = 1;
+	int i;
+	int current_vol;
+	int target_vol;
+	int step;
+	unsigned char frame_buf[5]=
+	{
+		0x2E, 0x05, 0x01, 0x01, 0x00
+	};
+	frame_buf[3] = volume;
+	calculate_frame_checksum(frame_buf, 5, &frame_buf[4]);
+	ret_val = write(canbus_fd, frame_buf, 5);
+//	LOGD("myu----->into native_setVol---->sonata_car_info.vol= %d | volume= %d",sonata_car_info.vol,volume);
+//	// mute on, set the volume to 0x00, 
+//	if (volume & 0x80)		
+//	{
+//		LOGD("myu native_setVol volume high 8 bit ");
+//		if (sonata_car_info.vol & 0x80)
+//		{
+//			LOGD("myu native_setVol sonata_car_info.vol 8 bit ");
+//			return 0;
+//		}
+//		
+//		if (sonata_car_info.vol >= 1)
+//		{
+//			LOGD("myu native_setVol sonata_car_info.vol >=1 ");
+//			for (i=sonata_car_info.vol-1; i>=0; i--)
+//			{
+//				frame_buf[3] = i;
+//				calculate_frame_checksum(frame_buf, 5, &frame_buf[4]);
+//				for(int j=0; j<sizeof(frame_buf); j++){
+//					LOGD("11111111111myu native_setVol fram_buf[%d] = 0X%02x\n ",j,frame_buf[j]);
+//				}
+//				count = write(canbus_fd, frame_buf, 5);
+//				if (count == 5)
+//				{
+//					ret_val = 0;
+//				}
+//				else
+//				{
+//					ret_val = 1;
+//				}
+//			}
+//		}
+//		sonata_car_info.vol |= 0x80;
+//		LOGD("myu native_setVol volume high 8 bit-->sonata_car_info.vol=%d ",(int)sonata_car_info.vol);
+//	}
+//	else
+//	{
+//		LOGD("myu native_setVol volume low 8 bit ");
+//		// last time, the state is mute on
+//		if (sonata_car_info.vol & 0x80)
+//		{
+//			LOGD("myu native_setVol sonata_car_info.vol low 8 bit ");
+//			for (i=1; i<volume; i++)
+//			{
+//				frame_buf[3] = i;
+//				calculate_frame_checksum(frame_buf, 5, &frame_buf[4]);
+//				for(int j=0; j<sizeof(frame_buf); j++){
+//					LOGD("22222222myu native_setVol fram_buf[%d] = 0X%02x\n ",j,frame_buf[j]);
+//				}
+//				count = write(canbus_fd, frame_buf, 5);
+//				if (count == 5)
+//				{
+//					ret_val = 0;
+//				}
+//				else
+//				{
+//					ret_val = 1;
+//				}
+//			}
+//		}
+//		else if (sonata_car_info.vol < volume)
+//		{
+//			LOGD("myu native_setVol volume low 8 bit sonata_car_info.vol < volume");
+//			LOGD("33333myu sonata_car_info.vol+1 =%d |volume =%d ",sonata_car_info.vol+1,volume);
+//			for (i=sonata_car_info.vol+1; i<=volume; i++)
+//			{
+//				frame_buf[3] = sonata_car_info.vol = i;
+//				calculate_frame_checksum(frame_buf, 5, &frame_buf[4]);
+//				for(int j=0; j<sizeof(frame_buf); j++){
+//					LOGD("333333333myu native_setVol fram_buf[%d] = 0X%02x\n ",j,frame_buf[j]);
+//				}
+//				count = write(canbus_fd, frame_buf, 5);
+//				if (count == 5)
+//				{
+//					ret_val = 0;
+//				}
+//				else
+//				{
+//					ret_val = 1;
+//				}
+//			}
+//		}
+//		else if (sonata_car_info.vol > volume)		// decrease volume
+//		{
+//			LOGD("myu native_setVol volume low 8 bit sonata_car_info.vol > volume");
+//			LOGD("44444myu sonata_car_info.vol-1 =%d |volume =%d ",sonata_car_info.vol-1,volume);
+//			for (i=sonata_car_info.vol-1; i>=volume; i--)
+//			{
+//				frame_buf[3] = sonata_car_info.vol = i;
+//				calculate_frame_checksum(frame_buf, 5, &frame_buf[4]);
+//				for(int j=0; j<sizeof(frame_buf); j++){
+//					LOGD("444444444myu native_setVol fram_buf[%d] = 0X%02x\n ",j,frame_buf[j]);
+//				}
+//				count = write(canbus_fd, frame_buf, 5);
+//				if (count == 5)
+//				{
+//					ret_val = 0;
+//				}
+//				else
+//				{
+//					ret_val = 1;
+//				}
+//			}
+//		}
+//		//sonata_car_info.vol = volume;
+//		LOGD("myu native_setVol volume low 8 bit-->sonata_car_info.vol=%d ",(int)sonata_car_info.vol);
+//	}
+
+	return ret_val;
+}
+
+// sonata8 set EQ bass
+// dzwei, 2014-11-7
+static jint android_server_CanBusService_native_setBass(
+	JNIEnv* env, jobject obj, jbyte bass_val)
+{
+	int count;			// the byte number that have been written 
+	int ret_val = 1;
+	unsigned char frame_buf[5]=
+	{
+		0x2E, 0x06, 0x01, 0x01, 0x00
+	};
+	
+	sonata_car_info.bass_val = bass_val;
+	frame_buf[3] = bass_val;
+	calculate_frame_checksum(frame_buf, 5, &frame_buf[4]);
+	for(int i=0;i<5;i++){
+		LOGD("myu native_setBass= 0X%x ",frame_buf[i]);
+	}
+	count = write(canbus_fd, frame_buf, 5);
+	if (count == 5)
+	{
+		ret_val = 0;
+	}
+
+	return ret_val;
+}
+
+// sonata8 set EQ mid
+// dzwei, 2014-11-7
+static jint android_server_CanBusService_native_setMid(
+	JNIEnv* env, jobject obj, jbyte mid_val)
+{
+	int count;			// the byte number that have been written 
+	int ret_val = 1;
+	unsigned char frame_buf[5]=
+	{
+		0x2E, 0x07, 0x01, 0x01, 0x00
+	};
+	
+	sonata_car_info.mid_val = mid_val;
+	frame_buf[3] = mid_val;
+	calculate_frame_checksum(frame_buf, 5, &frame_buf[4]);
+	for(int i=0;i<5;i++){
+		LOGD("myu native_setMid= 0X%x ",frame_buf[i]);
+	}
+	count = write(canbus_fd, frame_buf, 5);
+	if (count == 5)
+	{
+		ret_val = 0;
+	}
+
+	return ret_val;
+}
+
+// sonata8 set EQ treble
+// dzwei, 2014-11-7
+static jint android_server_CanBusService_native_setTre(
+	JNIEnv* env, jobject obj, jbyte tre_val)
+{
+	int count;			// the byte number that have been written 
+	int ret_val = 1;
+	unsigned char frame_buf[5]=
+	{
+		0x2E, 0x08, 0x01, 0x01, 0x00
+	};
+	
+	sonata_car_info.tre_val = tre_val;
+	frame_buf[3] = tre_val;
+	calculate_frame_checksum(frame_buf, 5, &frame_buf[4]);
+	for(int i=0;i<5;i++){
+			LOGD("myu native_setTre= 0X%x ",frame_buf[i]);
+		}
+	count = write(canbus_fd, frame_buf, 5);
+	if (count == 5)
+	{
+		ret_val = 0;
+	}
+
+	return ret_val;
+}
+
+// sonata8 set ReadInfo
+// myu, 2014-11-12
+static jint android_server_CanBusService_native_readS8Info(
+	JNIEnv* env, jobject obj, jbyte read_info)
+{
+	int count;			// the byte number that have been written 
+	int ret_val = 1;
+	unsigned char frame_buf[5]=
+	{
+		0x2E, 0x0F, 0x01, 0x01, 0x00
+	};
+	
+	frame_buf[3] = read_info;
+	calculate_frame_checksum(frame_buf, 5, &frame_buf[4]);
+	count = write(canbus_fd, frame_buf, 5);
+	if (count == 5)
+	{
+		ret_val = 0;
+	}
+	LOGD("myu native_native_readS8Info :0X%x ret_val=%d count=%d ", read_info, ret_val, count);
+	return ret_val;
+}
+
+// sonata8 power state.
+// dzwei, 2014-11-7
+static jint android_server_CanBusService_native_setPower(
+	JNIEnv* env, jobject obj, jbyte on_off)
+{
+	int count;			// the byte number that have been written 
+	int ret_val = 1;
+	unsigned char frame_buf[5]=
+	{
+		0x2E, 0x0B, 0x01, 0x01, 0x00
+	};
+	on_off = !!on_off;	// set to 0 or 1
+	frame_buf[3] = on_off;
+	calculate_frame_checksum(frame_buf, 5, &frame_buf[4]);
+	count = write(canbus_fd, frame_buf, 5);
+	if (count == 5)
+	{
+		ret_val = 0;
+	}
+	LOGD("myu native_setPower on_off--->0X%x count=%d ", on_off, count);
+	return ret_val;
+}
 
 //*********************************************************
 //*   write data function
@@ -501,6 +661,8 @@ struct CanBusService {
     jmethodID mReportAirContition;
     jmethodID mGetMemberCarDoor;
     jmethodID mReportCarDoor;
+    jmethodID mGetMemberSonata8;
+    jmethodID mReportSonata8;
 };
 static CanBusService gCanBusService;
 
@@ -537,7 +699,8 @@ struct AirCondition {
 };
 static AirCondition gAirCondition;
 
-int updateAndReportAirConditon(unsigned char * buf, int len)
+//int updateAndReportAirConditon(unsigned char * buf, int len)
+int updateAndReportAirConditon(void)
 {
     JNIEnv* env;
     gJavaVM->AttachCurrentThread(&env, NULL);
@@ -548,81 +711,81 @@ int updateAndReportAirConditon(unsigned char * buf, int len)
         return -1;
     }
     
-    LOGD("bShowAcInfo : %d", canbus_ac_info.bShowAcInfo);
+    LOGD("bShowAcInfo : %d", ac_info.bShowAcInfo);
     env->CallBooleanMethod(gAirCondition.mAirConditionObj,
             gAirCondition.mAcDisplaySwitch,
-            canbus_ac_info.bShowAcInfo == 0 ? false : true);
+            ac_info.bShowAcInfo == 0 ? false : true);
 
-    LOGD("power : %d", canbus_ac_info.bPowerOn);
+    LOGD("power : %d", ac_info.bPowerOn);
     env->CallBooleanMethod(gAirCondition.mAirConditionObj,
             gAirCondition.mAirConditioningSwitch,
-            canbus_ac_info.bPowerOn == 0 ? false : true);
-    LOGD("ac : %d", canbus_ac_info.bAcOn);
+            ac_info.bPowerOn == 0 ? false : true);
+    LOGD("ac : %d", ac_info.bAcOn);
     env->CallBooleanMethod(gAirCondition.mAirConditionObj,
     		gAirCondition.mACSwitch,
-    		canbus_ac_info.bAcOn == 0 ? false : true);
+    		ac_info.bAcOn == 0 ? false : true);
 
-    LOGD("ac_max : %d", canbus_ac_info.bAcMax);
+    LOGD("ac_max : %d", ac_info.bAcMax);
         env->CallBooleanMethod(gAirCondition.mAirConditionObj, gAirCondition.mACMAXSwitch,
-                canbus_ac_info.bAcMax == 0 ? false : true);
+                ac_info.bAcMax == 0 ? false : true);
     
-    LOGD("cycle : %d", canbus_ac_info.bLoopMode);
+    LOGD("cycle : %d", ac_info.bLoopMode);
     env->CallIntMethod(gAirCondition.mAirConditionObj,
     		gAirCondition.mCycle,
-    		canbus_ac_info.bLoopMode);
+    		ac_info.bLoopMode);
     //	env->SetBooleanField(gAirCondition.mAirConditionObj, gAirCondition.mAUTOStrongWindSwitch );
     //	env->SetBooleanField(gAirCondition.mAirConditionObj, gAirCondition.mAUTOSoftWindSiwtch );
-    LOGD("auto : %d", canbus_ac_info.bAuto);
+    LOGD("auto : %d", ac_info.bAuto);
     env->CallBooleanMethod(gAirCondition.mAirConditionObj, gAirCondition.mAUTOSwitch,
-        canbus_ac_info.bAuto == 0 ? false : true);
+        ac_info.bAuto == 0 ? false : true);
 
-    LOGD("dual : %d", canbus_ac_info.bDualOn);
+    LOGD("dual : %d", ac_info.bDualOn);
     env->CallBooleanMethod(gAirCondition.mAirConditionObj, gAirCondition.mDUALSwitch,
-        canbus_ac_info.bDualOn == 0 ? false : true);
-    LOGD("max : %d", canbus_ac_info.bFrontOn);
+        ac_info.bDualOn == 0 ? false : true);
+    LOGD("max : %d", ac_info.bFrontOn);
     env->CallBooleanMethod(gAirCondition.mAirConditionObj,
         gAirCondition.mMAXFORNTSwitch,
-        canbus_ac_info.bFrontOn == 0 ? false : true);
-    LOGD("rear : %d", canbus_ac_info.bRearOn);
+        ac_info.bFrontOn == 0 ? false : true);
+    LOGD("rear : %d", ac_info.bRearOn);
     env->CallBooleanMethod(gAirCondition.mAirConditionObj, gAirCondition.mREARSwitch,
-        canbus_ac_info.bRearOn == 0 ? false : true);
-    LOGD("wind direction : %d", canbus_ac_info.fanMode);
+        ac_info.bRearOn == 0 ? false : true);
+    LOGD("wind direction : %d", ac_info.fanMode);
     env->CallIntMethod(gAirCondition.mAirConditionObj, gAirCondition.mWindDirection,
-    		canbus_ac_info.fanMode);
+    		ac_info.fanMode);
     //	env->SetBooleanField(gAirCondition.mAirConditionObj, mAirConditioningDisplaySiwtch;
-    LOGD("wind level : %d", canbus_ac_info.fanSpeed.iCurSpeed);
+    LOGD("wind level : %d", ac_info.fanSpeed.iCurSpeed);
     env->CallIntMethod(gAirCondition.mAirConditionObj, gAirCondition.mWindLevel,
-        canbus_ac_info.fanSpeed.iCurSpeed);
-    jfloat leftTemp = (float)canbus_ac_info.tempLeft / 10;
+        ac_info.fanSpeed.iCurSpeed);
+    jfloat leftTemp = (float)ac_info.tempLeft / 10;
     LOGD("left temp : %.1f", leftTemp);
     env->CallFloatMethod(gAirCondition.mAirConditionObj, gAirCondition.mLeftTemp, leftTemp);
-    jfloat rightTemp = (float)canbus_ac_info.tempRight / 10;
+    jfloat rightTemp = (float)ac_info.tempRight / 10;
     LOGD("right temp : %.1f", rightTemp);
     env->CallFloatMethod(gAirCondition.mAirConditionObj, gAirCondition.mRightTemp, rightTemp);
-    LOGD("aqs : %d", canbus_ac_info.bAQS);
+    LOGD("aqs : %d", ac_info.bAQS);
     env->CallBooleanMethod(gAirCondition.mAirConditionObj,
         gAirCondition.mAQSInternalCycleSwitch,
-        canbus_ac_info.bAQS == 0 ? false : true);
+        ac_info.bAQS == 0 ? false : true);
     jint leftSeatHeatingLevel;
-    if (canbus_ac_info.bShowLeftSeatHeated == 0) {
+    if (ac_info.bShowLeftSeatHeated == 0) {
     	leftSeatHeatingLevel = 0;
     } else {
-    	leftSeatHeatingLevel = canbus_ac_info.nLeftSeatHeated;
+    	leftSeatHeatingLevel = ac_info.nLeftSeatHeated;
     }
     LOGD("left seat heating : %d", leftSeatHeatingLevel);
     env->CallIntMethod(gAirCondition.mAirConditionObj, gAirCondition.mLeftSeatHeatingLevel, leftSeatHeatingLevel);
     jint rightSeatHeatingLevel;
-    if (canbus_ac_info.bShowRightSeatHeated == 0) {
+    if (ac_info.bShowRightSeatHeated == 0) {
         rightSeatHeatingLevel = 0;
     } else {
-        rightSeatHeatingLevel = canbus_ac_info.nRightSeatHeated;
+        rightSeatHeatingLevel = ac_info.nRightSeatHeated;
     }
     LOGD("right seat heating : %d", rightSeatHeatingLevel);
     env->CallIntMethod(gAirCondition.mAirConditionObj, gAirCondition.mRightSeatHeatingLevel, rightSeatHeatingLevel);
-    LOGD("rear lock : %d", canbus_ac_info.bRearLock);
+    LOGD("rear lock : %d", ac_info.bRearLock);
     env->CallBooleanMethod(gAirCondition.mAirConditionObj,
         gAirCondition.mREARLockSwitch,
-        canbus_ac_info.bRearLock == 0 ? false : true);
+        ac_info.bRearLock == 0 ? false : true);
     env->CallVoidMethod(gCanBusService.mCanBusServiceObj, gCanBusService.mReportAirContition);
     gJavaVM->DetachCurrentThread();
     return 0;
@@ -774,6 +937,24 @@ struct CarDoor {
 
 static CarDoor gCarDoor;
 
+struct CarVolume
+{
+	jobject mCarVolObj;
+	jmethodID mSetFrontRearBal;
+	jmethodID mSetLeftRightBal;
+	jmethodID mSetVol;
+	jmethodID mSetFrontLeftVol;	
+	jmethodID mSetFrontRightVol;	
+	jmethodID mSetRearLeftVol;	
+	jmethodID mSetRearRightVol;	
+	jmethodID mSetBas;			// bass
+	jmethodID mSetMid;			// middle
+	jmethodID mSetTre;			// treble
+};
+static CarVolume gCarVolume;
+
+/*
+// original code 
 int updateAndReportCarDoor(unsigned char *buf, int len) {
 	JNIEnv * env;
 	gJavaVM->AttachCurrentThread(&env, NULL);
@@ -792,7 +973,30 @@ int updateAndReportCarDoor(unsigned char *buf, int len) {
     env->CallVoidMethod(gCanBusService.mCanBusServiceObj, gCanBusService.mReportCarDoor);
 	return 0;
 }
+*/
+// code modified by dzwei, 2015-4-16
+int updateAndReportCarDoor(void) {
+	JNIEnv * env;
+	gJavaVM->AttachCurrentThread(&env, NULL);
+	if (env == NULL) {
+		return -1;
+	}
 
+	if (gCarDoor.mCarDoorObj == NULL)
+		return -1;
+	
+	env->CallIntMethod(gCarDoor.mCarDoorObj, gCarDoor.mSetFrontLeft, door_info.front_left);
+	env->CallIntMethod(gCarDoor.mCarDoorObj, gCarDoor.mSetFrontRight, door_info.front_right);
+	env->CallIntMethod(gCarDoor.mCarDoorObj, gCarDoor.mSetRearLeft, door_info.rear_left);
+	env->CallIntMethod(gCarDoor.mCarDoorObj, gCarDoor.mSetRearRight, door_info.rear_right);
+    env->CallVoidMethod(gCanBusService.mCanBusServiceObj, gCanBusService.mReportCarDoor);
+    gJavaVM->DetachCurrentThread();
+	
+	return 0;
+}
+
+/*
+// original code 
 int updateAndReportRadar(unsigned char *buf, int len) {
     JNIEnv* env;
     gJavaVM->AttachCurrentThread(&env, NULL);
@@ -800,17 +1004,6 @@ int updateAndReportRadar(unsigned char *buf, int len) {
         ALOGE("updateAndReportRadar error. env is NULL!");
         return -1;
     }
-/*
-    jbyteArray data = env->NewByteArray(len);
-    if(data == NULL){
-        gJavaVM->DetachCurrentThread();
-        return -1;
-    }
-
-    env->SetByteArrayRegion(data, 0, len, (jbyte*)buf);
-    env->CallVoidMethod(gCanBusService.mCanBusServiceObj, gCanBusService.mReportRadarMethod, data);
-    env->DeleteLocalRef(data);
-*/
 
     if((buf == NULL) || len < 8){
         ALOGE("Happen error in updateAndReportRadar. The parameters is invalid.");
@@ -832,6 +1025,59 @@ int updateAndReportRadar(unsigned char *buf, int len) {
 
     gJavaVM->DetachCurrentThread();
     return 0;
+}
+*/
+// code modified by dzwei, 2015-4-16
+int updateAndReportRadar(void) {
+    JNIEnv* env;
+    gJavaVM->AttachCurrentThread(&env, NULL);
+    if(env == NULL){
+        ALOGE("updateAndReportRadar error. env is NULL!");
+        return -1;
+    }
+
+    if(gRadar.mRadarObj == NULL){
+        ALOGE("Happen error in updateAndReportRadar. The gRadar.mRadarObj is NULL.");
+        return -1;
+    }
+	
+    env->CallIntMethod(gRadar.mRadarObj, gRadar.mSetDistanceHeadstockLeft, radar_info.front_left);
+    env->CallIntMethod(gRadar.mRadarObj, gRadar.mSetDistanceHeadstockRight, radar_info.front_right);
+    env->CallIntMethod(gRadar.mRadarObj, gRadar.mSetDistanceTailstockLeft, radar_info.rear_left);
+    env->CallIntMethod(gRadar.mRadarObj, gRadar.mSetDistanceTailstockRight, radar_info.rear_right);
+    env->CallIntMethod(gRadar.mRadarObj, gRadar.mSetDistanceHeadstockCentreLeft, radar_info.front_center_left);
+    env->CallIntMethod(gRadar.mRadarObj, gRadar.mSetDistanceHeadstockCentreRight, radar_info.front_center_right);
+    env->CallIntMethod(gRadar.mRadarObj, gRadar.mSetDistanceTailstockCentreLeft, radar_info.rear_center_left);
+    env->CallIntMethod(gRadar.mRadarObj, gRadar.mSetDistanceTailstockCentreRight, radar_info.rear_center_right);
+    env->CallVoidMethod(gCanBusService.mCanBusServiceObj, gCanBusService.mReportRadarMethod);
+
+    gJavaVM->DetachCurrentThread();
+    return 0;
+}
+
+int updateAndReportSonata8(tSonataCarInfo *sonata8Info, int len) {
+	JNIEnv * env;
+	gJavaVM->AttachCurrentThread(&env, NULL);
+	  LOGD("myu  updateAndReportSonata8 is into");
+	if (env == NULL) {
+		return -1;
+	}
+	if ((sonata8Info == NULL) || (len < 1)) {
+		return -1;
+	}
+	if (gCarVolume.mCarVolObj == NULL)
+		return -1;
+	LOGD("myu  updateAndReportSonata8-->FrontRearBal=%d LeftRightBal=%d SetBas=%d SetMid=%d SetTre=%d SetVolume=%d"
+			,(int)(sonata8Info->fad_val), (int)(sonata8Info->bal_val), (int)(sonata8Info->bass_val), 
+			(int)(sonata8Info->mid_val), (int)(sonata8Info->tre_val), (int)(sonata8Info->vol));
+	env->CallIntMethod(gCarVolume.mCarVolObj, gCarVolume.mSetFrontRearBal, (int)(sonata8Info->fad_val));
+	env->CallIntMethod(gCarVolume.mCarVolObj, gCarVolume.mSetLeftRightBal, (int)(sonata8Info->bal_val));
+	env->CallIntMethod(gCarVolume.mCarVolObj, gCarVolume.mSetBas, (int)(sonata8Info->bass_val));
+	env->CallIntMethod(gCarVolume.mCarVolObj, gCarVolume.mSetMid, (int)(sonata8Info->mid_val));
+	env->CallIntMethod(gCarVolume.mCarVolObj, gCarVolume.mSetTre, (int)(sonata8Info->tre_val));
+	env->CallIntMethod(gCarVolume.mCarVolObj, gCarVolume.mSetVol, (int)(sonata8Info->vol));
+	env->CallVoidMethod(gCanBusService.mCanBusServiceObj, gCanBusService.mReportSonata8);
+	return 0;
 }
 
 static int registerRadarFieldIDs(JNIEnv *env){
@@ -910,6 +1156,52 @@ static int registerCarDoorFieldIDs(JNIEnv *env){
 }
 //************************************************************
 
+static int registerSonata8FieldIDs(JNIEnv *env){
+		 if(env == NULL) return -1;
+     jclass clazz = env->FindClass("com/android/internal/car/can/Sonata8");
+     if(clazz == NULL){
+        ALOGE("Can't registerSonata8FieldIDs. Can't find Sonata8 class.");
+        return -1;
+     }
+     gCarVolume.mSetFrontRearBal = env->GetMethodID(clazz, "setBalanceFrontAndRear", "(I)V");
+   	 if(gCarVolume.mSetFrontRearBal == NULL) {
+    		ALOGE("gCarVolume.mSetFrontRearBal");
+    		return -1;
+     }
+     
+     gCarVolume.mSetLeftRightBal = env->GetMethodID(clazz, "setBalanceLeftAndRight", "(I)V");
+   	 if(gCarVolume.mSetLeftRightBal == NULL) {
+    		ALOGE("gCarVolume.mSetLeftRightBal");
+    		return -1;
+     }
+     
+     gCarVolume.mSetBas = env->GetMethodID(clazz, "setVolumeEQBass", "(I)V");
+   	 if(gCarVolume.mSetBas == NULL) {
+    		ALOGE("gCarVolume.mSetBas");
+    		return -1;
+     }
+     
+     gCarVolume.mSetMid = env->GetMethodID(clazz, "setVolumeEQMid", "(I)V");
+   	 if(gCarVolume.mSetMid == NULL) {
+    		ALOGE("gCarVolume.mSetMid");
+    		return -1;
+     }
+     
+     gCarVolume.mSetTre = env->GetMethodID(clazz, "setVolumeEQTreble", "(I)V");
+   	 if(gCarVolume.mSetTre == NULL) {
+    		ALOGE("gCarVolume.mSetTre");
+    		return -1;
+     }
+     
+   	gCarVolume.mSetVol = env->GetMethodID(clazz, "setVolume", "(I)V");
+   	   	 if(gCarVolume.mSetVol == NULL) {
+   	    		ALOGE("gCarVolume.mSetVol");
+   	    		return -1;
+   	     }
+     return 0;
+	}
+//************************************************************
+
 static jboolean android_server_CanBusService_native_start(JNIEnv* env, jobject obj)
 {
 	pthread_t canbus_thread_id;
@@ -917,6 +1209,8 @@ static jboolean android_server_CanBusService_native_start(JNIEnv* env, jobject o
     gCanBusService.mCanBusServiceObj = env->NewGlobalRef(obj);
     env->GetJavaVM(&gJavaVM);
     canbus_fd = open(CANBUS_DEV, O_RDWR | O_NOCTTY);
+    LOGD("myu native_start-->canbus_fd:%d",canbus_fd);
+    //ioctl(canbus_fd, CANBUS_IOCTL_MCU_UART_38400,384);
     if(canbus_fd < 0){
         ALOGE("open %s failed. error:%d(%s)", CANBUS_DEV, errno, strerror(errno));
         return false;
@@ -933,14 +1227,18 @@ static jboolean android_server_CanBusService_native_start(JNIEnv* env, jobject o
 
     jobject tempCarDoor = (jobject)env->CallObjectMethod(gCanBusService.mCanBusServiceObj, gCanBusService.mGetMemberCarDoor);
     gCarDoor.mCarDoorObj = env->NewGlobalRef(tempCarDoor);
+    
+    jobject tempSnata8 = (jobject)env->CallObjectMethod(gCanBusService.mCanBusServiceObj, gCanBusService.mGetMemberSonata8);
+    gCarVolume.mCarVolObj = env->NewGlobalRef(tempSnata8);
     //****************************
     
-	err = pthread_create(&canbus_thread_id, NULL, canbus_thread_func, NULL); 
+	err = pthread_create(&canbus_thread_id, NULL, canbus_thread_func, NULL);
+	LOGD("myu native_start-->err:%d",err);
 	if (err) {
 		ALOGE("cant creat canbus_thread_func \r\n");
 		return false;
 	}
-
+	LOGD("myu native_start!!!");
 	// start can thread
 	return true;
 }
@@ -949,6 +1247,17 @@ static JNINativeMethod sMethods[] = {
      /* name, signature, funcPtr */
 	{"native_start", "()Z", (void*)android_server_CanBusService_native_start},
     {"native_sendCommand", "([B)I", (void*)android_server_CanBusService_native_sendCommand},
+	{"native_setMcuUartFunc", "(I)I", (void*)android_server_CanBusService_native_setMcuUartFunc},
+	{"native_setCarType", "(I)I", (void*)android_server_CanBusService_native_setCarType},
+	{"native_setFadVal", "(B)I", (void*)android_server_CanBusService_native_setFadVal},
+	{"native_setBalVal", "(B)I", (void*)android_server_CanBusService_native_setBalVal},
+	{"native_setVol", "(B)I", (void*)android_server_CanBusService_native_setVol},
+	{"native_setBass", "(B)I", (void*)android_server_CanBusService_native_setBass},
+	{"native_setMid", "(B)I", (void*)android_server_CanBusService_native_setMid},
+	{"native_setTre", "(B)I", (void*)android_server_CanBusService_native_setTre},
+	{"native_setPower", "(B)I", (void*)android_server_CanBusService_native_setPower},
+	{"native_readS8Info", "(B)I", (void*)android_server_CanBusService_native_readS8Info},
+	{"native_setUART38400", "(I)I", (void*)android_server_CanBusService_setSercial_UART38400},
 };
 
 //int register_android_server_BatteryService(JNIEnv* env)
@@ -971,6 +1280,9 @@ int register_android_server_CanBusService(JNIEnv* env)
 	gCanBusService.mGetMemberCarDoor = env->GetMethodID(clazz, "getMemberCarDoor",
 			"()Lcom/android/internal/car/can/CarDoor;");
 	gCanBusService.mReportCarDoor = env->GetMethodID(clazz, "reportCarDoor", "()V");
+	gCanBusService.mGetMemberSonata8 = env->GetMethodID(clazz, "getMemberSonata8", 
+				"()Lcom/android/internal/car/can/Sonata8;");
+	gCanBusService.mReportSonata8 = env->GetMethodID(clazz, "reportSonata8", "()V" );
     if(registerRadarFieldIDs(env) != 0)
         return -1;
     
@@ -978,6 +1290,9 @@ int register_android_server_CanBusService(JNIEnv* env)
         return -1;
 
     if(registerCarDoorFieldIDs(env) != 0)
+    	return -1;
+    	
+    if(registerSonata8FieldIDs(env) != 0)
     	return -1;
 
     return jniRegisterNativeMethods(env, "com/android/server/CanBusService", sMethods, NELEM(sMethods));
