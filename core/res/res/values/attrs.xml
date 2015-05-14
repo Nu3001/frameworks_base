@@ -1600,7 +1600,8 @@
         <enum name="KEYCODE_BONOVO_RADIO_TURNUP" value="345" />
         <enum name="KEYCODE_BONOVO_RADIO_TURNDOWN" value="346" />
         <enum name="KEYCODE_BONOVO_SWITCH_FMAM" value="347" />
-        <enum name="KEYCODE_BONOVO_LIGHTSTATE " value="348" />
+        <enum name="KEYCODE_BONOVO_LIGHTSTATE" value="348" />
+        <enum name="KEYCODE_BONOVO_REVERSE" value="349" />
         <!-- ***************************************************************** -->
     </attr>
 

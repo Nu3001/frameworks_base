@@ -4341,6 +4341,13 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     mContext.sendBroadcast(lightstate_intent);
                 }
                 break;
+            case KeyEvent.KEYCODE_BONOVO_REVERSE:
+                if(down){
+                    Intent reverse_intent = new Intent("android.intent.action.KEYCODE_BONOVO_REVERSE");
+                    mContext.sendBroadcast(reverse_intent);
+                }
+                break;
+
             //******************************************************************
         }
         return result;
