@@ -26736,6 +26736,7 @@ package android.view {
     field public static final int KEYCODE_BONOVO_RADIO_TURNDOWN = 346; // 0x15a
     field public static final int KEYCODE_BONOVO_RADIO_TURNUP = 345; // 0x159
     field public static final int KEYCODE_BONOVO_RECODER = 335; // 0x14f
+    field public static final int KEYCODE_BONOVO_REVERSE = 349; // 0x15d
     field public static final int KEYCODE_BONOVO_SHUTDOWN = 322; // 0x142
     field public static final int KEYCODE_BONOVO_SLEEP = 327; // 0x147
     field public static final int KEYCODE_BONOVO_SWITCH_FMAM = 347; // 0x15b
