@@ -27,6 +27,7 @@ import android.content.Intent;
 import android.media.RemoteController.OnClientUpdateListener;
 import android.os.Binder;
 import android.os.Build;
+import android.os.UserHandle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
@@ -509,11 +510,18 @@ public class AudioManager {
         int keyCode = event.getKeyCode();
         switch (keyCode) {
             case KeyEvent.KEYCODE_VOLUME_UP:
+                Intent add_volume_intent = new Intent("android.intent.action.BONOVO_VOLUMEADD_KEY");
+                mContext.sendBroadcastAsUser(add_volume_intent, UserHandle.CURRENT);
+                break;
             case KeyEvent.KEYCODE_VOLUME_DOWN:
+                Intent sub_volume_intent = new Intent("android.intent.action.BONOVO_VOLUMESUB_KEY");
+                mContext.sendBroadcastAsUser(sub_volume_intent, UserHandle.CURRENT);
+                break;
+            /* removed stock android code below - override VOlume up/ Volume down
                 /*
                  * Adjust the volume in on key down since it is more
                  * responsive to the user.
-                 */
+
                 int flags = FLAG_SHOW_UI | FLAG_VIBRATE;
 
                 if (mUseMasterVolume) {
@@ -530,15 +538,17 @@ public class AudioManager {
                             stream,
                             flags);
                 }
-                break;
+                break; */
             case KeyEvent.KEYCODE_VOLUME_MUTE:
-                if (event.getRepeatCount() == 0) {
+                Intent mute_intent = new Intent("android.intent.action.KEYCODE_BONOVO_SYSTEMMUTE_KEY");
+                mContext.sendBroadcast(mute_intent);
+                /*if (event.getRepeatCount() == 0) {
                     if (mUseMasterVolume) {
                         setMasterMute(!isMasterMute());
                     } else {
                         // TODO: Actually handle MUTE.
                     }
-                }
+                } */
                 break;
         }
     }
