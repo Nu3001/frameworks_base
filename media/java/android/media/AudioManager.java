@@ -541,7 +541,7 @@ public class AudioManager {
                 break; */
             case KeyEvent.KEYCODE_VOLUME_MUTE:
                 Intent mute_intent = new Intent("android.intent.action.KEYCODE_BONOVO_SYSTEMMUTE_KEY");
-                mContext.sendBroadcast(mute_intent);
+                mContext.sendBroadcastAsUser(mute_volume_intent, UserHandle.CURRENT);
                 /*if (event.getRepeatCount() == 0) {
                     if (mUseMasterVolume) {
                         setMasterMute(!isMasterMute());
