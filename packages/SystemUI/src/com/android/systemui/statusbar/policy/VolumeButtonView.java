@@ -74,12 +74,6 @@ public class VolumeButtonView extends KeyButtonView {
                 //Log.d("KeyButtonView", "press");
                 mDownTime = SystemClock.uptimeMillis();
                 setPressed(true);
-                if (mCode != 0) {
-                    sendEvent(KeyEvent.ACTION_DOWN, 0, mDownTime);
-                } else {
-                    // Provide the same haptic feedback that the system offers for virtual keys.
-                    performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
-                }
                 if (mSupportsLongpress) {
                     removeCallbacks(mCheckLongPress);
                     postDelayed(mCheckLongPress, ViewConfiguration.getLongPressTimeout());
@@ -95,9 +89,6 @@ public class VolumeButtonView extends KeyButtonView {
                 break;
             case MotionEvent.ACTION_CANCEL:
                 setPressed(false);
-                if (mCode != 0) {
-                    sendEvent(KeyEvent.ACTION_UP, KeyEvent.FLAG_CANCELED);
-                }
                 if (mSupportsLongpress) {
                     removeCallbacks(mCheckLongPress);
                 }
@@ -117,9 +108,19 @@ public class VolumeButtonView extends KeyButtonView {
     }
 
     public boolean performClick() {
-        Intent intent = new Intent("android.intent.action.BONOVO_UPDATEVOLUME_KEY");
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        mContext.sendBroadcast(intent);
+        if (mCode == 24) {
+            Intent intent = new Intent("android.intent.action.BONOVO_VOLUMEADD_KEY");
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            mContext.sendBroadcast(intent);
+        } else if (mCode == 25) {
+            Intent intent = new Intent("android.intent.action.BONOVO_VOLUMESUB_KEY");
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            mContext.sendBroadcast(intent);
+        } else {
+            Intent intent = new Intent("android.intent.action.BONOVO_UPDATEVOLUME_KEY");
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            mContext.sendBroadcast(intent);
+        }
         return true;
     }
     public boolean performLongClick() {

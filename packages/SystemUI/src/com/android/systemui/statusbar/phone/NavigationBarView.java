@@ -88,6 +88,21 @@ public class NavigationBarView extends LinearLayout {
     private Drawable mRecentIcon;
     private Drawable mRecentLandIcon;
 
+    private boolean mVolumeUp;
+    private boolean mVolumeDown;
+    private boolean mVolumeSlider;
+    private boolean mMusic;
+    private boolean mHomeClock;
+    private boolean mNavigation;
+    private boolean mPhone;
+    private boolean mAutomotive;
+    private boolean mMediaPrev;
+    private boolean mMediaPlay;
+    private boolean mMediaNext;
+    private boolean mHideBack;
+    private boolean mHideHome;
+    private boolean mHideRecents;
+
     private DelegateViewHelper mDelegateHelper;
     private DeadZone mDeadZone;
     private final NavigationBarTransitions mBarTransitions;
@@ -246,39 +261,100 @@ public class NavigationBarView extends LinearLayout {
 
         void observe() {
             mContext.getContentResolver().registerContentObserver(Settings.System.getUriFor(
-                    Settings.System.NAVBAR_MEDIA_MODE), false, this);
+                    Settings.System.NAVBAR_SHOW_VOLUME_UP), false, this);
+            mContext.getContentResolver().registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.NAVBAR_SHOW_VOLUME_DOWN), false, this);
+            mContext.getContentResolver().registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.NAVBAR_SHOW_VOLUME_SLIDER), false, this);
+            mContext.getContentResolver().registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.NAVBAR_SHOW_MUSIC), false, this);
+            mContext.getContentResolver().registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.NAVBAR_SHOW_HOME_CLOCK), false, this);
+            mContext.getContentResolver().registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.NAVBAR_SHOW_NAVIGATION), false, this);
+            mContext.getContentResolver().registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.NAVBAR_SHOW_PHONE), false, this);
+            mContext.getContentResolver().registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.NAVBAR_SHOW_AUTOMOTIVE), false, this);
+            mContext.getContentResolver().registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.NAVBAR_SHOW_MEDIA_PREV), false, this);
+            mContext.getContentResolver().registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.NAVBAR_SHOW_MEDIA_PLAY), false, this);
+            mContext.getContentResolver().registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.NAVBAR_SHOW_MEDIA_NEXT), false, this);
+            mContext.getContentResolver().registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.NAVBAR_HIDE_BACK), false, this);
+            mContext.getContentResolver().registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.NAVBAR_HIDE_HOME), false, this);
+            mContext.getContentResolver().registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.NAVBAR_HIDE_RECENTS), false, this);
         }
 
         @Override
         public void onChange(boolean selfChange) {
-            onNavBarMediaModeChange();
+            updateButtonViews();
         }
     }
 
-    private void onNavBarMediaModeChange(){
-        View clock = mCurrentView.findViewById(R.id.digitalclock01);
+    private void updateButtonViews(){
+        mVolumeUp = Settings.System.getBoolean(mContext.getContentResolver(),
+                Settings.System.NAVBAR_SHOW_VOLUME_UP, false);
+        mVolumeDown = Settings.System.getBoolean(mContext.getContentResolver(),
+                Settings.System.NAVBAR_SHOW_VOLUME_DOWN, false);
+        mVolumeSlider = Settings.System.getBoolean(mContext.getContentResolver(),
+                Settings.System.NAVBAR_SHOW_VOLUME_SLIDER, false);
+        mMusic = Settings.System.getBoolean(mContext.getContentResolver(),
+                Settings.System.NAVBAR_SHOW_MUSIC, false);
+        mHomeClock = Settings.System.getBoolean(mContext.getContentResolver(),
+                Settings.System.NAVBAR_SHOW_HOME_CLOCK, false);
+        mNavigation = Settings.System.getBoolean(mContext.getContentResolver(),
+                Settings.System.NAVBAR_SHOW_NAVIGATION, false);
+        mPhone = Settings.System.getBoolean(mContext.getContentResolver(),
+                Settings.System.NAVBAR_SHOW_PHONE, false);
+        mAutomotive = Settings.System.getBoolean(mContext.getContentResolver(),
+                Settings.System.NAVBAR_SHOW_AUTOMOTIVE, false);
+        mMediaPrev = Settings.System.getBoolean(mContext.getContentResolver(),
+                Settings.System.NAVBAR_SHOW_MEDIA_PREV, false);
+        mMediaPlay = Settings.System.getBoolean(mContext.getContentResolver(),
+                Settings.System.NAVBAR_SHOW_MEDIA_PLAY, false);
+        mMediaNext = Settings.System.getBoolean(mContext.getContentResolver(),
+                Settings.System.NAVBAR_SHOW_MEDIA_NEXT, false);
+        mHideBack = Settings.System.getBoolean(mContext.getContentResolver(),
+                Settings.System.NAVBAR_HIDE_BACK, false);
+        mHideHome = Settings.System.getBoolean(mContext.getContentResolver(),
+                Settings.System.NAVBAR_HIDE_HOME, false);
+        mHideRecents = Settings.System.getBoolean(mContext.getContentResolver(),
+                Settings.System.NAVBAR_HIDE_RECENTS, false);
+
+        View volumeup = getVolumeUpButton();
+        View volumedown = getVolumeDownButton();
+        View volumeslider = getVolumeSliderButton();
+        View homeclock = getHomeClock();
         View home = getHomeButton();
         View back = getBackButton();
-        View play = mCurrentView.findViewById(R.id.media_play);
-        View next = mCurrentView.findViewById(R.id.media_next);
-        View prev = mCurrentView.findViewById(R.id.media_prev);
-        if (Settings.System.getBoolean(mContext.getContentResolver(),Settings.System.NAVBAR_MEDIA_MODE, false)) {
-            Log.d(TAG,"MediaMode!");
-            clock.setVisibility(GONE);
-            home.setVisibility(GONE);
-            back.setVisibility(GONE);
-            play.setVisibility(VISIBLE);
-            next.setVisibility(VISIBLE);
-            prev.setVisibility(VISIBLE);
-        }else {
-            Log.d(TAG,"NavBar Mode!");
-            play.setVisibility(GONE);
-            next.setVisibility(GONE);
-            prev.setVisibility(GONE);
-            clock.setVisibility(VISIBLE);
-            home.setVisibility(VISIBLE);
-            back.setVisibility(VISIBLE);
-        }
+        View recents = getRecentsButton();
+        View play = getPlayButton();
+        View next = getNextButton();
+        View prev = getPrevButton();
+        View music = getMusicButton();
+        View navigation = getNavigationButton();
+        View phone = getCommunicationButton();
+        View automotive = getAutomotiveButton();
+
+        volumeup.setVisibility(mVolumeUp ? View.VISIBLE : View.GONE);
+        volumedown.setVisibility(mVolumeDown ? View.VISIBLE : View.GONE);
+        volumeslider.setVisibility(mVolumeSlider ? View.VISIBLE : View.GONE);
+        homeclock.setVisibility(mHomeClock ? View.VISIBLE : View.GONE);
+        music.setVisibility(mMusic ? View.VISIBLE : View.GONE);
+        navigation.setVisibility(mNavigation ? View.VISIBLE : View.GONE);
+        phone.setVisibility(mPhone ? View.VISIBLE : View.GONE);
+        automotive.setVisibility(mAutomotive ? View.VISIBLE : View.GONE);
+        prev.setVisibility(mMediaPrev ? View.VISIBLE : View.GONE);
+        play.setVisibility(mMediaPlay ? View.VISIBLE : View.GONE);
+        next.setVisibility(mMediaNext ? View.VISIBLE : View.GONE);
+        home.setVisibility(mHideHome ? View.GONE : View.VISIBLE);
+        back.setVisibility(mHideBack ? View.GONE : View.VISIBLE);
+        recents.setVisibility(mHideRecents ? View.GONE : View.VISIBLE);
     }
 
     public BarTransitions getBarTransitions() {
@@ -331,6 +407,11 @@ public class NavigationBarView extends LinearLayout {
     public View getHomeButton() {
         return mCurrentView.findViewById(R.id.home);
     }
+
+    public View getHomeClock() {
+        return mCurrentView.findViewById(R.id.homeclock);
+    }
+
     public View getScreenshotButton(){
         return mCurrentView.findViewById(R.id.screenshot);
     }
@@ -338,17 +419,39 @@ public class NavigationBarView extends LinearLayout {
     public View getMusicButton() {
         return mCurrentView.findViewById(R.id.music);
     }
+
     public View getNavigationButton() {
         return mCurrentView.findViewById(R.id.navigation);
     }
-    public View getVolumeButton() {
+
+    public View getVolumeSliderButton() {
         return mCurrentView.findViewById(R.id.volume);
+    }
+
+    public View getVolumeUpButton() {
+        return mCurrentView.findViewById(R.id.add);
+    }
+
+    public View getVolumeDownButton() {
+        return mCurrentView.findViewById(R.id.sub);
     }
     public View getCommunicationButton() {
         return mCurrentView.findViewById(R.id.communication);
     }
+
     public View getAutomotiveButton() {
         return mCurrentView.findViewById(R.id.automotive);
+    }
+    public View getPrevButton() {
+        return mCurrentView.findViewById(R.id.media_prev);
+    }
+
+    public View getPlayButton() {
+        return mCurrentView.findViewById(R.id.media_play);
+    }
+
+    public View getNextButton() {
+        return mCurrentView.findViewById(R.id.media_next);
     }
     // for when home is disabled, but search isn't
     public View getSearchLight() {
@@ -416,8 +519,8 @@ public class NavigationBarView extends LinearLayout {
         if (!force && mDisabledFlags == disabledFlags) return;
 
         mDisabledFlags = disabledFlags;
-		Log.d("zbiao-SystemUI", "disabledFlags:" + disabledFlags + ", force:" + force
-			+ ", mDisabledFlags:" + mDisabledFlags);
+        Log.d("zbiao-SystemUI", "disabledFlags:" + disabledFlags + ", force:" + force
+                + ", mDisabledFlags:" + mDisabledFlags);
 
         final boolean disableHome = ((disabledFlags & View.STATUS_BAR_DISABLE_HOME) != 0);
         final boolean disableRecent = ((disabledFlags & View.STATUS_BAR_DISABLE_RECENT) != 0);
@@ -439,25 +542,55 @@ public class NavigationBarView extends LinearLayout {
                 if (!mScreenOn && mCurrentView != null) {
                     lt.disableTransitionType(
                             LayoutTransition.CHANGE_APPEARING |
-                            LayoutTransition.CHANGE_DISAPPEARING |
-                            LayoutTransition.APPEARING |
-                            LayoutTransition.DISAPPEARING);
+                                    LayoutTransition.CHANGE_DISAPPEARING |
+                                    LayoutTransition.APPEARING |
+                                    LayoutTransition.DISAPPEARING);
                 }
             }
         }
 
-        getBackButton()   .setVisibility(disableBack       ? View.INVISIBLE : View.VISIBLE);
-        getHomeButton()   .setVisibility(disableHome       ? View.INVISIBLE : View.VISIBLE);
-        //getRecentsButton().setVisibility(disableRecent     ? View.INVISIBLE : View.VISIBLE);
-        getRecentsButton().setVisibility(GONE);
-        getMusicButton().setVisibility(disableHome     ? View.INVISIBLE : View.VISIBLE);
-        getNavigationButton().setVisibility(disableHome     ? View.INVISIBLE : View.VISIBLE);
-        getAutomotiveButton().setVisibility(disableHome     ? View.INVISIBLE : View.VISIBLE);
-        getCommunicationButton().setVisibility(disableHome     ? View.INVISIBLE : View.VISIBLE);
-        getVolumeButton().setVisibility(disableHome     ? View.INVISIBLE : View.VISIBLE);
-        getCommunicationButton().setVisibility(disableHome     ? View.INVISIBLE : View.VISIBLE);
-       //  getScreenshotButton().setVisibility(disableHome       ? View.INVISIBLE : View.VISIBLE);
-
+        if (!mHideBack) {
+            getBackButton().setVisibility(disableBack ? View.INVISIBLE : View.VISIBLE);
+        }
+        if (!mHideHome) {
+            getHomeButton().setVisibility(disableHome ? View.INVISIBLE : View.VISIBLE);
+        }
+        if (mHomeClock) {
+            getHomeClock().setVisibility(disableHome ? View.INVISIBLE : View.VISIBLE);
+        }
+        if (!mHideRecents) {
+            getRecentsButton().setVisibility(disableRecent ? View.INVISIBLE : View.VISIBLE);
+        }
+        if (mMusic) {
+            getMusicButton().setVisibility(disableHome ? View.INVISIBLE : View.VISIBLE);
+        }
+        if (mNavigation) {
+            getNavigationButton().setVisibility(disableHome ? View.INVISIBLE : View.VISIBLE);
+        }
+        if (mAutomotive) {
+            getAutomotiveButton().setVisibility(disableHome ? View.INVISIBLE : View.VISIBLE);
+        }
+        if (mPhone) {
+            getCommunicationButton().setVisibility(disableHome ? View.INVISIBLE : View.VISIBLE);
+        }
+        if (mVolumeSlider) {
+            getVolumeSliderButton().setVisibility(disableHome ? View.INVISIBLE : View.VISIBLE);
+        }
+        if (mVolumeUp) {
+            getVolumeUpButton().setVisibility(disableHome ? View.INVISIBLE : View.VISIBLE);
+        }
+        if (mVolumeDown) {
+            getVolumeDownButton().setVisibility(disableHome ? View.INVISIBLE : View.VISIBLE);
+        }
+        if (mMediaPrev) {
+            getPrevButton().setVisibility(disableHome ? View.INVISIBLE : View.VISIBLE);
+        }
+        if (mMediaPlay) {
+            getPlayButton().setVisibility(disableHome ? View.INVISIBLE : View.VISIBLE);
+        }
+        if (mMediaNext) {
+            getNextButton().setVisibility(disableHome ? View.INVISIBLE : View.VISIBLE);
+        }
 
         final boolean showSearch = disableHome && !disableSearch;
         final boolean showCamera = showSearch && !mCameraDisabledByDpm;
@@ -533,7 +666,7 @@ public class NavigationBarView extends LinearLayout {
         mCurrentView = mRotatedViews[Surface.ROTATION_0];
 
         watchForAccessibilityChanges();
-        onNavBarMediaModeChange();
+        updateButtonViews();
     }
 
     private void watchForAccessibilityChanges() {

@@ -2305,10 +2305,88 @@ public final class Settings {
         public static final String IMMERSIVE_MODE_SB = "immersive_mode_sb";
 
         /**
-         * Navbar Media Mode
+         * Navbar Volume button
          * @hide
          */
-        public static final String NAVBAR_MEDIA_MODE = "navbar_media_mode";
+        public static final String NAVBAR_SHOW_VOLUME_UP = "navbar_show_volume_up";
+
+        /**
+         * Navbar Volume button
+         * @hide
+         */
+        public static final String NAVBAR_SHOW_VOLUME_DOWN = "navbar_show_volume_down";
+
+        /**
+         * Navbar Volume button
+         * @hide
+         */
+        public static final String NAVBAR_SHOW_VOLUME_SLIDER = "navbar_show_volume_slider";
+
+        /**
+         * Navbar Music
+         * @hide
+         */
+        public static final String NAVBAR_SHOW_MUSIC = "navbar_show_music";
+
+        /**
+         * Navbar HOME Clock
+         * @hide
+         */
+        public static final String NAVBAR_SHOW_HOME_CLOCK = "navbar_show_home_clock";
+
+        /**
+         * Navbar Navigation button
+         * @hide
+         */
+        public static final String NAVBAR_SHOW_NAVIGATION = "navbar_show_navigation";
+
+        /**
+         * Navbar Phone button
+         * @hide
+         */
+        public static final String NAVBAR_SHOW_PHONE = "navbar_show_phone";
+
+        /**
+         * Navbar Volume button
+         * @hide
+         */
+        public static final String NAVBAR_SHOW_AUTOMOTIVE = "navbar_show_automotive";
+
+        /**
+         * Navbar Media Prev button
+         * @hide
+         */
+        public static final String NAVBAR_SHOW_MEDIA_PREV = "navbar_show_media_prev";
+
+        /**
+         * Navbar Media Play button
+         * @hide
+         */
+        public static final String NAVBAR_SHOW_MEDIA_PLAY = "navbar_show_media_play";
+
+        /**
+         * Navbar Media Next button
+         * @hide
+         */
+        public static final String NAVBAR_SHOW_MEDIA_NEXT = "navbar_show_media_next";
+
+        /**
+         * Navbar Back button
+         * @hide
+         */
+        public static final String NAVBAR_HIDE_BACK = "navbar_hide_back";
+
+        /**
+         * Navbar Stock Home button
+         * @hide
+         */
+        public static final String NAVBAR_HIDE_HOME = "navbar_hide_home";
+
+        /**
+         * Navbar recents button
+         * @hide
+         */
+        public static final String NAVBAR_HIDE_RECENTS = "navbar_hide_recents";
 
         /**
          * Whether the phone vibrates when it is ringing due to an incoming call. This will
