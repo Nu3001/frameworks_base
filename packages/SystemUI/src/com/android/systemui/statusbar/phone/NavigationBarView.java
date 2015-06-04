@@ -99,9 +99,9 @@ public class NavigationBarView extends LinearLayout {
     private boolean mMediaPrev;
     private boolean mMediaPlay;
     private boolean mMediaNext;
-    private boolean mHideBack;
-    private boolean mHideHome;
-    private boolean mHideRecents;
+    private boolean mShowBack;
+    private boolean mShowHome;
+    private boolean mShowRecents;
 
     private DelegateViewHelper mDelegateHelper;
     private DeadZone mDeadZone;
@@ -283,11 +283,11 @@ public class NavigationBarView extends LinearLayout {
             mContext.getContentResolver().registerContentObserver(Settings.System.getUriFor(
                     Settings.System.NAVBAR_SHOW_MEDIA_NEXT), false, this);
             mContext.getContentResolver().registerContentObserver(Settings.System.getUriFor(
-                    Settings.System.NAVBAR_HIDE_BACK), false, this);
+                    Settings.System.NAVBAR_SHOW_BACK), false, this);
             mContext.getContentResolver().registerContentObserver(Settings.System.getUriFor(
-                    Settings.System.NAVBAR_HIDE_HOME), false, this);
+                    Settings.System.NAVBAR_SHOW_HOME), false, this);
             mContext.getContentResolver().registerContentObserver(Settings.System.getUriFor(
-                    Settings.System.NAVBAR_HIDE_RECENTS), false, this);
+                    Settings.System.NAVBAR_SHOW_RECENTS), false, this);
         }
 
         @Override
@@ -302,29 +302,29 @@ public class NavigationBarView extends LinearLayout {
         mVolumeDown = Settings.System.getBoolean(mContext.getContentResolver(),
                 Settings.System.NAVBAR_SHOW_VOLUME_DOWN, false);
         mVolumeSlider = Settings.System.getBoolean(mContext.getContentResolver(),
-                Settings.System.NAVBAR_SHOW_VOLUME_SLIDER, false);
+                Settings.System.NAVBAR_SHOW_VOLUME_SLIDER, true);
         mMusic = Settings.System.getBoolean(mContext.getContentResolver(),
-                Settings.System.NAVBAR_SHOW_MUSIC, false);
+                Settings.System.NAVBAR_SHOW_MUSIC, true);
         mHomeClock = Settings.System.getBoolean(mContext.getContentResolver(),
-                Settings.System.NAVBAR_SHOW_HOME_CLOCK, false);
+                Settings.System.NAVBAR_SHOW_HOME_CLOCK, true);
         mNavigation = Settings.System.getBoolean(mContext.getContentResolver(),
-                Settings.System.NAVBAR_SHOW_NAVIGATION, false);
+                Settings.System.NAVBAR_SHOW_NAVIGATION, true);
         mPhone = Settings.System.getBoolean(mContext.getContentResolver(),
-                Settings.System.NAVBAR_SHOW_PHONE, false);
+                Settings.System.NAVBAR_SHOW_PHONE, true);
         mAutomotive = Settings.System.getBoolean(mContext.getContentResolver(),
-                Settings.System.NAVBAR_SHOW_AUTOMOTIVE, false);
+                Settings.System.NAVBAR_SHOW_AUTOMOTIVE, true);
         mMediaPrev = Settings.System.getBoolean(mContext.getContentResolver(),
                 Settings.System.NAVBAR_SHOW_MEDIA_PREV, false);
         mMediaPlay = Settings.System.getBoolean(mContext.getContentResolver(),
                 Settings.System.NAVBAR_SHOW_MEDIA_PLAY, false);
         mMediaNext = Settings.System.getBoolean(mContext.getContentResolver(),
                 Settings.System.NAVBAR_SHOW_MEDIA_NEXT, false);
-        mHideBack = Settings.System.getBoolean(mContext.getContentResolver(),
-                Settings.System.NAVBAR_HIDE_BACK, false);
-        mHideHome = Settings.System.getBoolean(mContext.getContentResolver(),
-                Settings.System.NAVBAR_HIDE_HOME, false);
-        mHideRecents = Settings.System.getBoolean(mContext.getContentResolver(),
-                Settings.System.NAVBAR_HIDE_RECENTS, false);
+        mShowBack = Settings.System.getBoolean(mContext.getContentResolver(),
+                Settings.System.NAVBAR_SHOW_BACK, true);
+        mShowHome = Settings.System.getBoolean(mContext.getContentResolver(),
+                Settings.System.NAVBAR_SHOW_HOME, false);
+        mShowRecents = Settings.System.getBoolean(mContext.getContentResolver(),
+                Settings.System.NAVBAR_SHOW_RECENTS, false);
 
         View volumeup = getVolumeUpButton();
         View volumedown = getVolumeDownButton();
@@ -352,9 +352,9 @@ public class NavigationBarView extends LinearLayout {
         prev.setVisibility(mMediaPrev ? View.VISIBLE : View.GONE);
         play.setVisibility(mMediaPlay ? View.VISIBLE : View.GONE);
         next.setVisibility(mMediaNext ? View.VISIBLE : View.GONE);
-        home.setVisibility(mHideHome ? View.GONE : View.VISIBLE);
-        back.setVisibility(mHideBack ? View.GONE : View.VISIBLE);
-        recents.setVisibility(mHideRecents ? View.GONE : View.VISIBLE);
+        home.setVisibility(mShowHome ? View.VISIBLE : View.GONE);
+        back.setVisibility(mShowBack ? View.VISIBLE : View.GONE);
+        recents.setVisibility(mShowRecents ? View.VISIBLE : View.GONE);
     }
 
     public BarTransitions getBarTransitions() {
@@ -549,16 +549,16 @@ public class NavigationBarView extends LinearLayout {
             }
         }
 
-        if (!mHideBack) {
+        if (mShowBack) {
             getBackButton().setVisibility(disableBack ? View.INVISIBLE : View.VISIBLE);
         }
-        if (!mHideHome) {
+        if (mShowHome) {
             getHomeButton().setVisibility(disableHome ? View.INVISIBLE : View.VISIBLE);
         }
         if (mHomeClock) {
             getHomeClock().setVisibility(disableHome ? View.INVISIBLE : View.VISIBLE);
         }
-        if (!mHideRecents) {
+        if (mShowRecents) {
             getRecentsButton().setVisibility(disableRecent ? View.INVISIBLE : View.VISIBLE);
         }
         if (mMusic) {

@@ -2305,6 +2305,12 @@ public final class Settings {
         public static final String IMMERSIVE_MODE_SB = "immersive_mode_sb";
 
         /**
+         * Headsup Notifications
+         * @hide
+         */
+        public static final String ENABLE_HEADS_UP = "enable_heads_up";
+
+        /**
          * Navbar Volume button
          * @hide
          */
@@ -2374,19 +2380,19 @@ public final class Settings {
          * Navbar Back button
          * @hide
          */
-        public static final String NAVBAR_HIDE_BACK = "navbar_hide_back";
+        public static final String NAVBAR_SHOW_BACK = "navbar_show_back";
 
         /**
          * Navbar Stock Home button
          * @hide
          */
-        public static final String NAVBAR_HIDE_HOME = "navbar_hide_home";
+        public static final String NAVBAR_SHOW_HOME = "navbar_hide_home";
 
         /**
          * Navbar recents button
          * @hide
          */
-        public static final String NAVBAR_HIDE_RECENTS = "navbar_hide_recents";
+        public static final String NAVBAR_SHOW_RECENTS = "navbar_hide_recents";
 
         /**
          * Whether the phone vibrates when it is ringing due to an incoming call. This will
