@@ -2386,13 +2386,13 @@ public final class Settings {
          * Navbar Stock Home button
          * @hide
          */
-        public static final String NAVBAR_SHOW_HOME = "navbar_hide_home";
+        public static final String NAVBAR_SHOW_HOME = "navbar_show_home";
 
         /**
          * Navbar recents button
          * @hide
          */
-        public static final String NAVBAR_SHOW_RECENTS = "navbar_hide_recents";
+        public static final String NAVBAR_SHOW_RECENTS = "navbar_show_recents";
 
         /**
          * Whether the phone vibrates when it is ringing due to an incoming call. This will
