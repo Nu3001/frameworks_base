@@ -1066,7 +1066,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode {
         if (shadeEntry == null) {
             return;
         }
-        if (mUseHeadsUp) {
+        if (mUseHeadsUp && shouldInterrupt(notification)) {
             if (DEBUG) Log.d(TAG, "launching notification in heads up mode");
             Entry interruptionCandidate = new Entry(key, notification, null);
             if (inflateViews(interruptionCandidate, mHeadsUpNotificationView.getHolder())) {
