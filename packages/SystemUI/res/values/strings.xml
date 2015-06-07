@@ -511,5 +511,8 @@
 	<string name="external_sd_unmount">sd card is unmount</string>
 	<string name="usb_storage_unmount">usb storage is unmount</string>
     <string name="chooser_text">Choose app</string>
+    <string name="statusbar_media">Statusbar Media Service</string>
+    <string name="unknown">Unknown</string>
+    <string name="media_paused">Media Paused</string>
 
 </resources>
