@@ -2311,6 +2311,12 @@ public final class Settings {
         public static final String ENABLE_HEADS_UP = "enable_heads_up";
 
         /**
+         * Enable media info in the statusbar
+         * @hide
+         */
+        public static final String ENABLE_STATUSBAR_MEDIA = "enable_status_bar_media";
+
+        /**
          * Navbar Volume button
          * @hide
          */
