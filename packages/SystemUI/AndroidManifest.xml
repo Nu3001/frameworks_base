@@ -248,5 +248,15 @@
                 <category android:name="android.intent.category.DESK_DOCK" />
             </intent-filter>
         </activity>
+        <service
+            android:name=".StatusbarMediaService"
+            android:label="@string/statusbar_media"
+            android:exported="true"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE" >
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+                <action android:name="com.android.systemui.START_REMOTE_CONTROLLER" />
+            </intent-filter>
+        </service>
     </application>
 </manifest>
