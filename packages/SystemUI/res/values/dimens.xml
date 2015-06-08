@@ -132,7 +132,7 @@
     <dimen name="navigation_key_width">85dip</dimen>
 
     <!-- The width of the view containing home/clock icons -->
-    <dimen name="navigation_home_key_width">130dip</dimen>
+    <dimen name="navigation_home_key_width">115dip</dimen>
 
     <!-- The width of the view containing the menu status bar icon -->
     <dimen name="navigation_menu_key_width">40dip</dimen>

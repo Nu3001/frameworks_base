@@ -41,6 +41,8 @@ import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
+import android.widget.ViewFlipper;
+
 import com.android.systemui.StatusbarMediaService;
 import com.android.systemui.R;
 
@@ -53,7 +55,7 @@ public class StatusBarMediaView extends LinearLayout {
     protected TextView mArtistText;
     protected TextView mTitleText;
     protected TextView mAlbumText;
-    protected ImageView mArtwork;
+    protected ViewFlipper mFlipper;
 
     private MetadataEditor mLastMetadata;
 
@@ -99,7 +101,6 @@ public class StatusBarMediaView extends LinearLayout {
                     mTitleText.setText("");
                     mArtistText.setText("");
                     mAlbumText.setText("");
-                    mArtwork.setImageBitmap(null);
                     break;
             }
         }
@@ -117,8 +118,9 @@ public class StatusBarMediaView extends LinearLayout {
             mTitleText.setText(editor.getString(MediaMetadataRetriever.METADATA_KEY_TITLE, mContext.getString(R.string.unknown)));
             mAlbumText.setText(editor.getString(MediaMetadataRetriever.METADATA_KEY_ALBUM, mContext.getString(R.string.unknown)));
 
-            mArtwork.setImageBitmap(editor.getBitmap(MetadataEditor.BITMAP_KEY_ARTWORK, null));
             mLastMetadata = editor;
+            // restart the Flipper at first View
+            mFlipper.setDisplayedChild(0);
         }
 
         @Override
@@ -139,7 +141,8 @@ public class StatusBarMediaView extends LinearLayout {
         mAlbumText = (TextView)findViewById(R.id.album_text);
         mArtistText = (TextView)findViewById(R.id.artist_text);
 
-        mArtwork = (ImageView)findViewById(R.id.album_art);
+        mFlipper = (ViewFlipper)findViewById(R.id.mediaviewflipper);
+
         mSettingsObserver = new SettingsObserver(mHandler);
         mSettingsObserver.observe();
         if (getVisibility() == View.VISIBLE) {
