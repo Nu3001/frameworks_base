@@ -51,4 +51,16 @@
     <!-- How far to slide the panel out when you touch it -->
     <!-- On tablets this is just the close_handle_height -->
     <dimen name="peek_height">@dimen/close_handle_height</dimen>
+
+    <!-- size at which Notification icons will be drawn in the status bar -->
+    <dimen name="status_bar_icon_drawing_size">32dip</dimen>
+
+    <!-- The width of the view containing non-menu status bar icons -->
+    <dimen name="navigation_key_width">120dip</dimen>
+
+    <!-- The width of the view containing home/clock icons -->
+    <dimen name="navigation_home_key_width">135dip</dimen>
+
+    <!-- The width of the view containing the menu status bar icon -->
+    <dimen name="navigation_menu_key_width">65dip</dimen>
 </resources>
