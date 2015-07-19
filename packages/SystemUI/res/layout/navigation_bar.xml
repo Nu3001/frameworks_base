@@ -45,39 +45,50 @@
 	         <!-- navigation controls -->
 
             <View
-                android:layout_width="@dimen/navigation_menu_key_width"
                 android:layout_height="match_parent"
+                android:layout_width="@dimen/navigation_menu_key_width"
+                android:src="@drawable/ic_sysbar_menu"
+                android:padding="@dimen/navigation_key_padding"
                 android:visibility="invisible"
+                android:layout_weight="1"
                 />
 
             <com.android.systemui.statusbar.policy.VolumeButtonView
                 android:id="@+id/sub"
                 android:layout_width="@dimen/navigation_key_width"
                 android:layout_height="match_parent"
-                android:src="@drawable/sub_normal"
+                android:padding="@dimen/navigation_key_padding"
+                android:src="@drawable/ic_sysbar_volume_down"
+                android:scaleType="center"
                 systemui:keyCode="25"
                 systemui:glowBackground="@drawable/ic_sysbar_highlight"
                 android:contentDescription="@string/accessibility_back"
+                android:layout_weight="1"
                 />
 
             <com.android.systemui.statusbar.policy.VolumeButtonView
 				android:id="@+id/volume"
-				android:layout_width="@dimen/navigation_key_width"
+                android:layout_width="@dimen/navigation_key_width"
 				android:layout_height="match_parent"
+                android:padding="@dimen/navigation_key_padding"
 				android:contentDescription="@string/accessibility_recent"
 				android:src="@drawable/ic_sysbar_volume"
+                android:scaleType="center"
 				systemui:glowBackground="@drawable/ic_sysbar_highlight"
+                android:layout_weight="1"
 				/>
 
             <com.android.systemui.statusbar.policy.MusicButtonView
                 android:id="@+id/music"
                 android:layout_width="@dimen/navigation_key_width"
                 android:layout_height="match_parent"
+                android:padding="@dimen/navigation_key_padding"
                 android:src="@drawable/ic_sysbar_music"
                 systemui:keyCode="0"
                 android:scaleType="center"
                 systemui:glowBackground="@drawable/ic_sysbar_highlight"
                 android:contentDescription="@string/accessibility_back"
+                android:layout_weight="1"
                 />
 
 
@@ -85,30 +96,37 @@
                 android:id="@+id/back"
                 android:layout_width="@dimen/navigation_key_width"
                 android:layout_height="match_parent"
+                android:padding="@dimen/navigation_key_padding"
                 android:src="@drawable/ic_sysbar_back"
                 systemui:keyCode="4"
                 android:scaleType="center"
                 systemui:glowBackground="@drawable/ic_sysbar_highlight"
                 android:contentDescription="@string/accessibility_back"
+                android:layout_weight="1"
                 />
 
             <com.android.systemui.statusbar.policy.KeyButtonView
                 android:id="@+id/home"
                 android:layout_height="match_parent"
                 android:layout_width="@dimen/navigation_key_width"
+                android:padding="@dimen/navigation_key_padding"
                 android:src="@drawable/ic_sysbar_home"
+                android:scaleType="center"
                 systemui:keyCode="3"
                 systemui:keyRepeat="false"
                 systemui:glowBackground="@drawable/ic_sysbar_highlight"
                 android:contentDescription="@string/accessibility_home"
+                android:layout_weight="1"
                 />
 
             <FrameLayout
                 android:id="@+id/homeclock"
                 android:layout_height="match_parent"
                 android:layout_width="@dimen/navigation_home_key_width"
+                android:padding="@dimen/navigation_key_padding"
                 android:clipChildren="false"
                 android:clipToPadding="false"
+                android:layout_weight="1"
                 >
                 <com.android.systemui.statusbar.policy.KeyButtonView
                     android:id="@+id/homeclockbutton"
@@ -133,95 +151,120 @@
                 android:id="@+id/recent_apps"
                 android:layout_width="@dimen/navigation_key_width"
                 android:layout_height="match_parent"
+                android:padding="@dimen/navigation_key_padding"
                 android:src="@drawable/ic_sysbar_recent"
+                android:scaleType="center"
                 systemui:glowBackground="@drawable/ic_sysbar_highlight"
                 android:contentDescription="@string/accessibility_recent"
+                android:layout_weight="1"
                 />
 
             <com.android.systemui.statusbar.policy.KeyButtonView
                 android:id="@+id/media_prev"
                 android:layout_width="@dimen/navigation_key_width"
                 android:layout_height="match_parent"
+                android:padding="@dimen/navigation_key_padding"
                 systemui:keyCode="88"
                 android:scaleType="center"
                 android:src="@drawable/ic_sysbar_media_prev"
                 systemui:glowBackground="@drawable/ic_sysbar_highlight"
+                android:layout_weight="1"
                 />
 
             <com.android.systemui.statusbar.policy.KeyButtonView
                 android:id="@+id/media_play"
                 android:layout_width="@dimen/navigation_key_width"
                 android:layout_height="match_parent"
+                android:padding="@dimen/navigation_key_padding"
                 systemui:keyCode="85"
                 android:scaleType="center"
                 android:src="@drawable/ic_sysbar_media_play"
                 systemui:glowBackground="@drawable/ic_sysbar_highlight"
+                android:layout_weight="1"
                 />
 
             <com.android.systemui.statusbar.policy.KeyButtonView
                 android:id="@+id/media_next"
                 android:layout_width="@dimen/navigation_key_width"
                 android:layout_height="match_parent"
+                android:padding="@dimen/navigation_key_padding"
                 systemui:keyCode="87"
                 android:scaleType="center"
                 android:src="@drawable/ic_sysbar_media_next"
                 systemui:glowBackground="@drawable/ic_sysbar_highlight"
+                android:layout_weight="1"
                 />
 
             <com.android.systemui.statusbar.policy.NavigationButtonView android:id="@+id/navigation"
                 android:layout_width="@dimen/navigation_key_width"
                 android:layout_height="match_parent"
+                android:padding="@dimen/navigation_key_padding"
                 android:src="@drawable/ic_sysbar_navigation"
                 systemui:keyCode="0"
                 android:scaleType="center"
                 systemui:glowBackground="@drawable/ic_sysbar_highlight"
+                android:layout_weight="1"
                 />
 
             <com.android.systemui.statusbar.policy.CommunicationButtonView android:id="@+id/communication"
                 android:layout_width="@dimen/navigation_key_width"
                 android:layout_height="match_parent"
+                android:padding="@dimen/navigation_key_padding"
                 android:src="@drawable/ic_sysbar_communication"
                 systemui:keyCode="0"
                 android:scaleType="center"
                 systemui:glowBackground="@drawable/ic_sysbar_highlight"
+                android:layout_weight="1"
                 />
 
             <com.android.systemui.statusbar.policy.AutomotiveButtonView android:id="@+id/automotive"
                 android:layout_width="@dimen/navigation_key_width"
                 android:layout_height="match_parent"
+                android:padding="@dimen/navigation_key_padding"
                 android:src="@drawable/ic_sysbar_automotive"
                 systemui:keyCode="0"
                 android:scaleType="center"
                 systemui:glowBackground="@drawable/ic_sysbar_highlight"
+                android:layout_weight="1"
                 />
 
 			<com.android.systemui.statusbar.policy.VolumeButtonView
 				android:id="@+id/add"
                 systemui:keyCode="24"
-				android:layout_width="@dimen/navigation_key_width"
+                android:layout_width="@dimen/navigation_key_width"
 				android:layout_height="match_parent"
+                android:padding="@dimen/navigation_key_padding"
 				android:contentDescription="@string/accessibility_recent"
-				android:src="@drawable/add_normal"
+				android:src="@drawable/ic_sysbar_volume_up"
+                android:scaleType="center"
 				systemui:glowBackground="@drawable/ic_sysbar_highlight"
+                android:layout_weight="1"
 				/>
 
             <com.android.systemui.statusbar.policy.KeyButtonView
                 android:id="@+id/screenshot"
-                android:layout_width="@dimen/navbar_screen_shot_size"
+                android:layout_width="@dimen/navigation_key_width"
                 android:layout_height="match_parent"
+                android:padding="@dimen/navigation_key_padding"
                 android:src="@drawable/capture"
+                android:scaleType="center"
                 android:contentDescription="@string/accessibility_recent"
                 android:visibility="gone"
-                systemui:glowBackground="@drawable/ic_sysbar_highlight" />
+                systemui:glowBackground="@drawable/ic_sysbar_highlight"
+                android:layout_weight="1"
+                />
 
             <com.android.systemui.statusbar.policy.KeyButtonView android:id="@+id/menu"
                 android:layout_width="@dimen/navigation_menu_key_width"
                 android:layout_height="match_parent"
+                android:padding="@dimen/navigation_key_padding"
                 android:src="@drawable/ic_sysbar_menu"
                 systemui:keyCode="82"
                 android:visibility="invisible"
                 android:contentDescription="@string/accessibility_menu"
-                systemui:glowBackground="@drawable/ic_sysbar_highlight" />
+                systemui:glowBackground="@drawable/ic_sysbar_highlight"
+                android:layout_weight="1"
+                />
         </LinearLayout>
 
         <!-- lights out layout to match exactly -->

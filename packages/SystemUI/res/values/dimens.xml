@@ -128,11 +128,16 @@
     <!-- The padding on the global screenshot background image -->
     <dimen name="global_screenshot_bg_padding">20dp</dimen>
 
+    <!-- Padding for each side of Navigation Buttons - Will try to do dynamic
+         Sizing, rather than specific widths - this will just create some spacing between
+         them when getting squeezed together -->
+    <dimen name="navigation_key_padding">2dp</dimen>
+
     <!-- The width of the view containing non-menu status bar icons -->
-    <dimen name="navigation_key_width">85dip</dimen>
+    <dimen name="navigation_key_width">60dip</dimen>
 
     <!-- The width of the view containing home/clock icons -->
-    <dimen name="navigation_home_key_width">115dip</dimen>
+    <dimen name="navigation_home_key_width">125dip</dimen>
 
     <!-- The width of the view containing the menu status bar icon -->
     <dimen name="navigation_menu_key_width">40dip</dimen>
