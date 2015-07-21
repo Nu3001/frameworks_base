@@ -26724,6 +26724,7 @@ package android.view {
     field public static final int KEYCODE_BONOVO_BT_ANSWER_HANG = 342; // 0x156
     field public static final int KEYCODE_BONOVO_BT_HANG_UP = 341; // 0x155
     field public static final int KEYCODE_BONOVO_BT_SWITCH_AUDIO = 343; // 0x157
+    field public static final int KEYCODE_BONOVO_BT_VOICEDIAL = 350; // 0x15e
     field public static final int KEYCODE_BONOVO_CAMERA = 338; // 0x152
     field public static final int KEYCODE_BONOVO_CMMB_RADIO = 337; // 0x151
     field public static final int KEYCODE_BONOVO_CMMB_TV = 336; // 0x150

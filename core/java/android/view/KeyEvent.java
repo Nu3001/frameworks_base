@@ -669,8 +669,9 @@ public class KeyEvent extends InputEvent implements Parcelable {
     public static final int KEYCODE_BONOVO_SWITCH_FMAM       = 347;
     public static final int KEYCODE_BONOVO_LIGHTSTATE        = 348;
     public static final int KEYCODE_BONOVO_REVERSE           = 349;
+    public static final int KEYCODE_BONOVO_BT_VOICEDIAL      = 350;
 	//*-----------------------------------------------------------------
-    private static final int LAST_KEYCODE           = KEYCODE_BONOVO_REVERSE;
+    private static final int LAST_KEYCODE           = KEYCODE_BONOVO_BT_VOICEDIAL;
     //private static final int LAST_KEYCODE           = KEYCODE_MEDIA_AUDIO_TRACK;
     //******************************************************************
 
@@ -944,6 +945,7 @@ public class KeyEvent extends InputEvent implements Parcelable {
         names.append(KEYCODE_BONOVO_BT_HANG_UP,"KEYCODE_BONOVO_BT_HANG_UP");
         names.append(KEYCODE_BONOVO_BT_ANSWER_HANG,"KEYCODE_BONOVO_BT_ANSWER_HANG");
         names.append(KEYCODE_BONOVO_BT_SWITCH_AUDIO,"KEYCODE_BONOVO_BT_SWITCH_AUDIO");
+        names.append(KEYCODE_BONOVO_BT_VOICEDIAL,"KEYCODE_BONOVO_BT_VOICEDIAL");
         names.append(KEYCODE_BONOVO_RADIO,"KEYCODE_BONOVO_RADIO");
         names.append(KEYCODE_BONOVO_RADIO_TURNUP,"KEYCODE_BONOVO_RADIO_TURNUP");
         names.append(KEYCODE_BONOVO_RADIO_TURNDOWN,"KEYCODE_BONOVO_RADIO_TURNDOWN");

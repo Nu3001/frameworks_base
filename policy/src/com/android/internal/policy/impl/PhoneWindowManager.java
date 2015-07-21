@@ -4347,7 +4347,12 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     mContext.sendBroadcast(reverse_intent);
                 }
                 break;
-
+            case KeyEvent.KEYCODE_BONOVO_BT_VOICEDIAL:
+                if(down){
+                    Intent voicedial_intent = new Intent("android.intent.action.BONOVO_CALL_VOICEDIAL");
+                    mContext.sendBroadcast(voicedial_intent);
+                }
+                break;
             //******************************************************************
         }
         return result;
