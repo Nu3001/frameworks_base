@@ -172,4 +172,10 @@ public class UsbPermissionActivity extends AlertActivity
             mClearDefaultHint.setVisibility(View.GONE);
         }
     }
+    
+    public void onStart() {
+        super.onStart();
+        mPermissionGranted = true;
+        finish();
+    }
 }
