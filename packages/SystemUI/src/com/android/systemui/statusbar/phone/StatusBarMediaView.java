@@ -120,7 +120,7 @@ public class StatusBarMediaView extends LinearLayout {
 
             mLastMetadata = editor;
             // restart the Flipper at first View
-            mFlipper.setDisplayedChild(0);
+            //mFlipper.setDisplayedChild(0);
         }
 
         @Override
