@@ -4277,6 +4277,11 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 }
                 break;
             case KeyEvent.KEYCODE_BONOVO_DVD:
+				Log.d(TAG, "============== PhoneWindowManager:KEYCODE_XDAUTO_APP_SWITCH  down:" + down);
+                if(down){
+                    Intent appswitch_intent = new Intent("android.intent.action.XDAUTO_APP_SWITCH");
+                    mContext.sendBroadcastAsUser(appswitch_intent, UserHandle.CURRENT);
+                }
                 break;
             case KeyEvent.KEYCODE_BONOVO_3G:
                 break;
