@@ -239,6 +239,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     boolean mHasNavigationBar = false;
     boolean mCanHideNavigationBar = false;
     boolean mNavigationBarCanMove = false; // can the navigation bar ever move to the side?
+    boolean mEnableRightNavbar = false; // user defined right navbar
     boolean mNavigationBarOnBottom = true; // is the navigation bar on the bottom *right now*?
     int[] mNavigationBarHeightForRotation = new int[4];
     int[] mNavigationBarWidthForRotation = new int[4];
@@ -300,14 +301,14 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     boolean mTranslucentDecorEnabled = true;
 
     int mPointerLocationMode = 0; // guarded by mLock
-	
-	//******************************************************************
+
+    //******************************************************************
     //* add by bonovo zbiao for android box
     //******************************************************************
 	//wchao
 	boolean mBonovoPowerOff = false;
 	//******************************************************************
-	
+
     // The last window we were told about in focusChanged.
     WindowState mFocusedWindow;
     IApplicationToken mFocusedApp;
@@ -542,6 +543,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.Secure.IMMERSIVE_MODE_CONFIRMATIONS), false, this,
                     UserHandle.USER_ALL);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                            Settings.System.ENABLE_RIGHT_NAVBAR), false, this,
+                    UserHandle.USER_ALL);
             updateSettings();
         }
 
@@ -728,7 +732,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 		    //******************************************************************
 			int resolvedBehavior = LONG_PRESS_POWER_NOTHING;
 			if(mBonovoPowerOff == true){
-				
+
 				mBonovoPowerOff = false;
 				mLongPressOnPowerBehavior = 2;
 			}
@@ -1104,10 +1108,10 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         int longSizeDp = longSize * DisplayMetrics.DENSITY_DEFAULT / density;
 
         // Allow the navigation bar to move on small devices (phones).
-        mNavigationBarCanMove = shortSizeDp < 600;
+        mNavigationBarCanMove = mEnableRightNavbar;
 
 		if(SystemProperties.get("ro.rk.small_screen","false").equals("true")){
-		 mNavigationBarCanMove=false;		
+		 mNavigationBarCanMove=false || mEnableRightNavbar;
 		}
 
         mHasNavigationBar = res.getBoolean(com.android.internal.R.bool.config_showNavigationBar);
@@ -1174,6 +1178,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     Settings.Secure.INCALL_POWER_BUTTON_BEHAVIOR,
                     Settings.Secure.INCALL_POWER_BUTTON_BEHAVIOR_DEFAULT,
                     UserHandle.USER_CURRENT);
+            mEnableRightNavbar = Settings.System.getBoolean(resolver,
+                    Settings.System.ENABLE_RIGHT_NAVBAR,
+                    false);
 
             // Configure rotation lock.
             int userRotation = Settings.System.getIntForUser(resolver,

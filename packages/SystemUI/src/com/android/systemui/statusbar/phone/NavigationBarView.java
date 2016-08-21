@@ -102,6 +102,7 @@ public class NavigationBarView extends LinearLayout {
     private boolean mShowBack;
     private boolean mShowHome;
     private boolean mShowRecents;
+    private boolean mRightNavbar;
 
     private DelegateViewHelper mDelegateHelper;
     private DeadZone mDeadZone;
@@ -288,6 +289,8 @@ public class NavigationBarView extends LinearLayout {
                     Settings.System.NAVBAR_SHOW_HOME), false, this);
             mContext.getContentResolver().registerContentObserver(Settings.System.getUriFor(
                     Settings.System.NAVBAR_SHOW_RECENTS), false, this);
+            mContext.getContentResolver().registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.ENABLE_RIGHT_NAVBAR), false, this);
         }
 
         @Override
@@ -325,6 +328,8 @@ public class NavigationBarView extends LinearLayout {
                 Settings.System.NAVBAR_SHOW_HOME, false);
         mShowRecents = Settings.System.getBoolean(mContext.getContentResolver(),
                 Settings.System.NAVBAR_SHOW_RECENTS, false);
+        mRightNavbar = Settings.System.getBoolean(mContext.getContentResolver(),
+                Settings.System.ENABLE_RIGHT_NAVBAR, false);
 
         View volumeup = getVolumeUpButton();
         View volumedown = getVolumeDownButton();
@@ -717,9 +722,15 @@ public class NavigationBarView extends LinearLayout {
     }
 
     public void reorient() {
-        final int rot = mDisplay.getRotation();
+        int rot = mDisplay.getRotation();
         for (int i=0; i<4; i++) {
             mRotatedViews[i].setVisibility(View.GONE);
+        }
+
+        if (mRightNavbar) {
+            // .getRotation kinda lies to us.  Even though the NU/NR is in 'landscape' mode,
+            // it reports it as its default (or 0) orientation - landscape.
+            rot = 1;
         }
         mCurrentView = mRotatedViews[rot];
         mCurrentView.setVisibility(View.VISIBLE);
@@ -734,7 +745,7 @@ public class NavigationBarView extends LinearLayout {
         if (DEBUG) {
             Log.d(TAG, "reorient(): rot=" + mDisplay.getRotation());
         }
-
+        updateButtonViews();
         setNavigationIconHints(mNavigationIconHints, true);
     }
 
