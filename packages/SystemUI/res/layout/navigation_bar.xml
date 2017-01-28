@@ -44,7 +44,7 @@
   
 	         <!-- navigation controls -->
 
-            <View
+          <!--  <View
                 android:layout_height="match_parent"
                 android:layout_width="@dimen/navigation_menu_key_width"
                 android:src="@drawable/ic_sysbar_menu"
@@ -52,6 +52,7 @@
                 android:visibility="invisible"
                 android:layout_weight="1"
                 />
+          -->
 
             <com.android.systemui.statusbar.policy.VolumeButtonView
                 android:id="@+id/sub"
@@ -260,7 +261,7 @@
                 android:padding="@dimen/navigation_key_padding"
                 android:src="@drawable/ic_sysbar_menu"
                 systemui:keyCode="82"
-                android:visibility="invisible"
+                android:visibility="gone"
                 android:contentDescription="@string/accessibility_menu"
                 systemui:glowBackground="@drawable/ic_sysbar_highlight"
                 android:layout_weight="1"
@@ -365,6 +366,7 @@
             >
             
             <!-- navigation controls -->		
+            <!-- 
 	        <View
                 android:layout_height="@dimen/navigation_key_width"
                 android:layout_width="match_parent"
@@ -373,6 +375,7 @@
                 android:visibility="invisible"
                 android:layout_weight="1"
                 />
+            -->
 
             <com.android.systemui.statusbar.policy.VolumeButtonView
                 android:id="@+id/sub"
@@ -584,7 +587,7 @@
                 android:padding="@dimen/navigation_key_padding"
                 android:src="@drawable/ic_sysbar_menu"
                 systemui:keyCode="82"
-                android:visibility="invisible"
+                android:visibility="gone"
                 android:contentDescription="@string/accessibility_menu"
                 systemui:glowBackground="@drawable/ic_sysbar_highlight"
                 android:layout_weight="1"

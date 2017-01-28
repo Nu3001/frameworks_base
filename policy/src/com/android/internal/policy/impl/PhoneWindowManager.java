@@ -433,6 +433,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
     Display mDisplay;
 
+    int mDensity = 0; // for poking setInitialDisplay on changes
+
     int mLandscapeRotation = 0;  // default landscape rotation
     int mSeascapeRotation = 0;   // "other" landscape rotation, 180 degrees from mLandscapeRotation
     int mPortraitRotation = 0;   // default portrait rotation
@@ -1056,6 +1058,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             return;
         }
         mDisplay = display;
+	mDensity = density;
 
         final Resources res = mContext.getResources();
         int shortSize, longSize;
@@ -1169,6 +1172,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     public void updateSettings() {
         ContentResolver resolver = mContext.getContentResolver();
         boolean updateRotation = false;
+        boolean newRightNavBar = false;
         synchronized (mLock) {
             mEndcallBehavior = Settings.System.getIntForUser(resolver,
                     Settings.System.END_BUTTON_BEHAVIOR,
@@ -1178,7 +1182,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     Settings.Secure.INCALL_POWER_BUTTON_BEHAVIOR,
                     Settings.Secure.INCALL_POWER_BUTTON_BEHAVIOR_DEFAULT,
                     UserHandle.USER_CURRENT);
-            mEnableRightNavbar = Settings.System.getBoolean(resolver,
+            newRightNavBar= Settings.System.getBoolean(resolver,
                     Settings.System.ENABLE_RIGHT_NAVBAR,
                     false);
 
@@ -1225,6 +1229,13 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         }
         if (updateRotation) {
             updateRotation(true);
+        }
+        if (newRightNavBar != mEnableRightNavbar) {
+            mEnableRightNavbar = newRightNavBar;
+            if ((mDisplay != null) && (mDensity !=0)) {
+              setInitialDisplaySize(mDisplay, mUnrestrictedScreenWidth,
+                        mUnrestrictedScreenHeight, mDensity);
+            }
         }
     }
 
