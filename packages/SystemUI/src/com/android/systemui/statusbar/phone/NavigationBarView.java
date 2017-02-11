@@ -67,8 +67,6 @@ public class NavigationBarView extends LinearLayout {
     final static boolean DEBUG = false;
     final static String TAG = "PhoneStatusBar/NavigationBarView";
 
-    final static boolean NAVBAR_ALWAYS_AT_RIGHT = true;
-
     // slippery nav bar when everything is disabled, e.g. during setup
     final static boolean SLIPPERY_WHEN_DISABLED = true;
 
@@ -103,6 +101,7 @@ public class NavigationBarView extends LinearLayout {
     private boolean mShowHome;
     private boolean mShowRecents;
     private boolean mRightNavbar;
+    private boolean mLeftNavbar;
 
     private DelegateViewHelper mDelegateHelper;
     private DeadZone mDeadZone;
@@ -291,6 +290,8 @@ public class NavigationBarView extends LinearLayout {
                     Settings.System.NAVBAR_SHOW_RECENTS), false, this);
             mContext.getContentResolver().registerContentObserver(Settings.System.getUriFor(
                     Settings.System.ENABLE_RIGHT_NAVBAR), false, this);
+            mContext.getContentResolver().registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.ENABLE_LEFT_NAVBAR), false, this);
         }
 
         @Override
@@ -330,6 +331,8 @@ public class NavigationBarView extends LinearLayout {
                 Settings.System.NAVBAR_SHOW_RECENTS, false);
         mRightNavbar = Settings.System.getBoolean(mContext.getContentResolver(),
                 Settings.System.ENABLE_RIGHT_NAVBAR, false);
+        mLeftNavbar = Settings.System.getBoolean(mContext.getContentResolver(),
+                Settings.System.ENABLE_LEFT_NAVBAR, false);
 
         View volumeup = getVolumeUpButton();
         View volumedown = getVolumeDownButton();
@@ -664,9 +667,7 @@ public class NavigationBarView extends LinearLayout {
 
         mRotatedViews[Surface.ROTATION_90] = findViewById(R.id.rot90);
 
-        mRotatedViews[Surface.ROTATION_270] = NAVBAR_ALWAYS_AT_RIGHT
-                                                ? findViewById(R.id.rot90)
-                                                : findViewById(R.id.rot270);
+        mRotatedViews[Surface.ROTATION_270]= findViewById(R.id.rot270);
 
         mCurrentView = mRotatedViews[Surface.ROTATION_0];
 
@@ -731,6 +732,9 @@ public class NavigationBarView extends LinearLayout {
             // .getRotation kinda lies to us.  Even though the NU/NR is in 'landscape' mode,
             // it reports it as its default (or 0) orientation - landscape.
             rot = 1;
+        }
+        if (mLeftNavbar) {
+            rot = 3;
         }
         mCurrentView = mRotatedViews[rot];
         mCurrentView.setVisibility(View.VISIBLE);

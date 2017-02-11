@@ -240,6 +240,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     boolean mCanHideNavigationBar = false;
     boolean mNavigationBarCanMove = false; // can the navigation bar ever move to the side?
     boolean mEnableRightNavbar = false; // user defined right navbar
+    boolean mEnableLeftNavbar = false; // user defined left navbar
     boolean mNavigationBarOnBottom = true; // is the navigation bar on the bottom *right now*?
     int[] mNavigationBarHeightForRotation = new int[4];
     int[] mNavigationBarWidthForRotation = new int[4];
@@ -547,6 +548,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     UserHandle.USER_ALL);
             resolver.registerContentObserver(Settings.System.getUriFor(
                             Settings.System.ENABLE_RIGHT_NAVBAR), false, this,
+                    UserHandle.USER_ALL);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.ENABLE_LEFT_NAVBAR), false, this,
                     UserHandle.USER_ALL);
             updateSettings();
         }
@@ -983,7 +987,13 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     }
                     @Override
                     public void onSwipeFromRight() {
-                        if (mNavigationBar != null && !mNavigationBarOnBottom) {
+                        if (mNavigationBar != null && mEnableRightNavbar) {
+                            requestTransientBars(mNavigationBar);
+                        }
+                    }
+                    @Override
+                    public void onSwipeFromLeft() {
+                        if (mNavigationBar != null && mEnableLeftNavbar) {
                             requestTransientBars(mNavigationBar);
                         }
                     }
@@ -1111,11 +1121,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         int longSizeDp = longSize * DisplayMetrics.DENSITY_DEFAULT / density;
 
         // Allow the navigation bar to move on small devices (phones).
-        mNavigationBarCanMove = mEnableRightNavbar;
-
-		if(SystemProperties.get("ro.rk.small_screen","false").equals("true")){
-		 mNavigationBarCanMove=false || mEnableRightNavbar;
-		}
+        mNavigationBarCanMove = mEnableRightNavbar||mEnableLeftNavbar;
 
         mHasNavigationBar = res.getBoolean(com.android.internal.R.bool.config_showNavigationBar);
         // Allow a system property to override this. Used by the emulator.
@@ -1173,6 +1179,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         ContentResolver resolver = mContext.getContentResolver();
         boolean updateRotation = false;
         boolean newRightNavBar = false;
+        boolean newLeftNavBar = false;
         synchronized (mLock) {
             mEndcallBehavior = Settings.System.getIntForUser(resolver,
                     Settings.System.END_BUTTON_BEHAVIOR,
@@ -1184,6 +1191,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     UserHandle.USER_CURRENT);
             newRightNavBar= Settings.System.getBoolean(resolver,
                     Settings.System.ENABLE_RIGHT_NAVBAR,
+                    false);
+            newLeftNavBar= Settings.System.getBoolean(resolver,
+                    Settings.System.ENABLE_LEFT_NAVBAR,
                     false);
 
             // Configure rotation lock.
@@ -1230,8 +1240,10 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         if (updateRotation) {
             updateRotation(true);
         }
-        if (newRightNavBar != mEnableRightNavbar) {
+        if ((newRightNavBar != mEnableRightNavbar) ||
+           (newLeftNavBar != mEnableLeftNavbar)) {
             mEnableRightNavbar = newRightNavBar;
+            mEnableLeftNavbar = newLeftNavBar;
             if ((mDisplay != null) && (mDensity !=0)) {
               setInitialDisplaySize(mDisplay, mUnrestrictedScreenWidth,
                         mUnrestrictedScreenHeight, mDensity);
@@ -2846,28 +2858,54 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                         mSystemBottom = mTmpNavigationFrame.top;
                     }
                 } else {
-                    // Landscape screen; nav bar goes to the right.
-                    int left = displayWidth - overscanRight
-                            - mNavigationBarWidthForRotation[displayRotation];
-                    mTmpNavigationFrame.set(left, 0, displayWidth - overscanRight, displayHeight);
-                    mStableRight = mStableFullscreenRight = mTmpNavigationFrame.left;
-                    if (transientNavBarShowing) {
-                        mNavigationBarController.setBarShowingLw(true);
-                    } else if (navVisible) {
-                        mNavigationBarController.setBarShowingLw(true);
-                        mDockRight = mTmpNavigationFrame.left;
-                        mRestrictedScreenWidth = mDockRight - mRestrictedScreenLeft;
-                        mRestrictedOverscanScreenWidth = mDockRight - mRestrictedOverscanScreenLeft;
-                    } else {
-                        // We currently want to hide the navigation UI.
-                        mNavigationBarController.setBarShowingLw(false);
+                    // Landscape screen; nav bar goes to the left or right.
+                    if (mEnableLeftNavbar) {
+                        int right = mNavigationBarWidthForRotation[displayRotation];
+                        mTmpNavigationFrame.set(0, 0, right, displayHeight);
+                        mStableLeft = mStableFullscreenLeft = mUnrestrictedScreenLeft = right;
+                        if (transientNavBarShowing) {
+                            mNavigationBarController.setBarShowingLw(true);
+                        } else if (navVisible) {
+                            mNavigationBarController.setBarShowingLw(true);
+                            mDockLeft = right;
+                            mRestrictedScreenLeft = mRestrictedOverscanScreenLeft = right;
+                            mRestrictedScreenWidth = mUnrestrictedScreenWidth = mDockRight - mRestrictedScreenLeft;
+                            mRestrictedOverscanScreenWidth = mDockRight - mRestrictedOverscanScreenLeft;
+                        } else {
+                            // We currently want to hide the navigation UI.
+                            mNavigationBarController.setBarShowingLw(false);
+                        }
+                        if (navVisible && !navTranslucent && !mNavigationBar.isAnimatingLw()
+                                && !mNavigationBarController.wasRecentlyTranslucent()) {
+                            // If the nav bar is currently requested to be visible,
+                            // and not in the process of animating on or off, then
+                            // we can tell the app that it is covered by it.
+                            mSystemLeft = mTmpNavigationFrame.right;
+                        }
                     }
-                    if (navVisible && !navTranslucent && !mNavigationBar.isAnimatingLw()
-                            && !mNavigationBarController.wasRecentlyTranslucent()) {
-                        // If the nav bar is currently requested to be visible,
-                        // and not in the process of animating on or off, then
-                        // we can tell the app that it is covered by it.
-                        mSystemRight = mTmpNavigationFrame.left;
+                    else {
+                        int left = displayWidth - overscanRight
+                                - mNavigationBarWidthForRotation[displayRotation];
+                        mTmpNavigationFrame.set(left, 0, displayWidth - overscanRight, displayHeight);
+                        mStableRight = mStableFullscreenRight = mTmpNavigationFrame.left;
+                        if (transientNavBarShowing) {
+                            mNavigationBarController.setBarShowingLw(true);
+                        } else if (navVisible) {
+                            mNavigationBarController.setBarShowingLw(true);
+                            mDockRight = mTmpNavigationFrame.left;
+                            mRestrictedScreenWidth = mDockRight - mRestrictedScreenLeft;
+                            mRestrictedOverscanScreenWidth = mDockRight - mRestrictedOverscanScreenLeft;
+                        } else {
+                            // We currently want to hide the navigation UI.
+                            mNavigationBarController.setBarShowingLw(false);
+                        }
+                        if (navVisible && !navTranslucent && !mNavigationBar.isAnimatingLw()
+                                && !mNavigationBarController.wasRecentlyTranslucent()) {
+                            // If the nav bar is currently requested to be visible,
+                            // and not in the process of animating on or off, then
+                            // we can tell the app that it is covered by it.
+                            mSystemRight = mTmpNavigationFrame.left;
+                        }
                     }
                 }
                 // Make sure the content and current rectangles are updated to

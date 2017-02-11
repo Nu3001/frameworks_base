@@ -2305,6 +2305,12 @@ public final class Settings {
         public static final String ENABLE_RIGHT_NAVBAR = "enable_right_navbar";
 
         /**
+         * Allow Left side Navbar
+         * @hide
+         */
+        public static final String ENABLE_LEFT_NAVBAR = "enable_left_navbar";
+
+        /**
          * Immersive Mode StatusBar
          * @hide
          */
